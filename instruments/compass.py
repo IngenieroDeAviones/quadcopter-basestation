@@ -1,24 +1,35 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-ZetCode PyQt4 tutorial 
-
-This example draws three rectangles in three
-different colors. 
-
-author: Jan Bodnar
-website: zetcode.com 
-last edited: September 2011
-"""
+#!/usr/bin/python3
 
 import sys
 from PyQt4 import QtGui,  QtCore
 
-class Example(QtGui.QWidget):
+
+class SerialThread(QtCore.QThread):
+    headingChanged = QtCore.pyqtSignal(float)
+
+    def __init__(self):
+        super(SerialThread, self).__init__()
+        self.serial = sys.stdin
+
+    def run(self):
+        try:
+            heading = 0
+            for line in self.serial:
+                l = line.strip().split()
+                if l[0] != "T:" or len(l) != 18:
+                    continue
+                if heading != float(l[10]):
+                    heading = float(l[10])
+                    print(heading)
+                    self.headingChanged.emit(heading)
+        except Exception as e:
+            print(e)
+
+
+class CompassWidget(QtGui.QWidget):
     
     def __init__(self,  heading=0):
-        super(Example, self).__init__()
+        super(CompassWidget, self).__init__()
         
         self.heading=heading
         
@@ -45,6 +56,10 @@ class Example(QtGui.QWidget):
         
     def poly(self, pts):
         return QtGui.QPolygonF(list(map(lambda p: QtCore.QPointF(*p), pts)))
+
+    def setHeading(self, heading):
+        self.heading = heading
+        self.update()
 
     def paintEvent(self, e):
 
@@ -120,7 +135,10 @@ class Example(QtGui.QWidget):
 def main():
     
     app = QtGui.QApplication(sys.argv)
-    ex = Example()
+    compass = CompassWidget()
+    thread = SerialThread()
+    thread.headingChanged.connect(compass.setHeading)
+    thread.start()
     sys.exit(app.exec_())
 
 

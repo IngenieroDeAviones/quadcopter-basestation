@@ -17,8 +17,10 @@ from PyQt4 import QtGui,  QtCore
 
 class Example(QtGui.QWidget):
     
-    def __init__(self):
+    def __init__(self,  heading=0):
         super(Example, self).__init__()
+        
+        self.heading=heading
         
         #Define Lines
         self.thick=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
@@ -26,7 +28,8 @@ class Example(QtGui.QWidget):
         self.thin=QtGui.QPen(QtCore.Qt.white,  2,  cap=QtCore.Qt.FlatCap)
         self.plane=QtGui.QPen(QtCore.Qt.white, 2, cap=QtCore.Qt.FlatCap)
         
-        self.text=QtGui.QPen(QtCore.Qt.yellow, 4,  cap=QtCore.Qt.FlatCap)
+        self.text2=QtGui.QPen(QtCore.Qt.yellow, 4,  cap=QtCore.Qt.FlatCap)
+        self.text=QtGui.QPen(QtCore.Qt.red, 4,  cap=QtCore.Qt.FlatCap)
         self.textfont=QtGui.QFont("Times", 18, 75)
         
         planepoints=[[0, -100], [0, -85], [5, -75], [8, -40], [75, 5], [75, 20], [7, -5], [5, 40], [25, 60], [25, 70], [3,  58], [0, 62], [-3, 58], [-25, 70], [-25, 60], [-5, 40], [-7, -5], [-75, 20], [-75, 5], [-8, -40], [-5, -75], [0, -85]]
@@ -37,7 +40,7 @@ class Example(QtGui.QWidget):
     def initUI(self):      
 
         self.setGeometry(300, 300, 340, 340)
-        self.setWindowTitle('Colors')
+        self.setWindowTitle('Compass')
         self.show()
         
     def poly(self, pts):
@@ -57,7 +60,7 @@ class Example(QtGui.QWidget):
         
         qp.save()
 
-        qp.rotate(0)
+        qp.rotate(self.heading)
         
         rotation = 0
         while rotation < 360:
@@ -82,6 +85,10 @@ class Example(QtGui.QWidget):
                     qp.setPen(self.text)
                     qp.setFont(self.textfont)
                     qp.drawText(-qp.fontMetrics().width("W")/2, -110,  "W")
+                else:
+                    qp.setPen(self.text2)
+                    qp.setFont(self.textfont)
+                    qp.drawText(-qp.fontMetrics().width(str(int(rotation/10)))/2, -110, str(int(rotation/10)))
             elif rotation % 10 == 0:
                 qp.setPen(self.medium)
                 qp.drawLine(0, -170, 0, -140)
@@ -94,12 +101,8 @@ class Example(QtGui.QWidget):
 
         qp.restore()
         
+        # Draw airplane
         qp.setPen(self.plane)
-#        qp.drawLine(-10, 0, 10, 0)
-#        qp.drawLine(0, -100, 10, 0)
-#        qp.drawLine(10, 0, 0, 100)
-#        qp.drawLine(0, 100, -10, 0)
-#        qp.drawLine(-10, 0, 0, -100)
         qp.drawPolyline(self.planepoly)
         
         qp.end()

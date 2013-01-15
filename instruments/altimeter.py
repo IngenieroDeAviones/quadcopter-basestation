@@ -15,7 +15,6 @@ class SerialThread(QtCore.QThread):
         try:
             altitude = 0.0
             for line in self.serial:
-                print(line)
                 l = line.strip().split()
                 if len(l)!= 5:
                     continue
@@ -44,10 +43,8 @@ class AltimeterWidget(QtGui.QWidget):
         self.textAltFont=QtGui.QFont("Times", 12, 75)
         
         # Define points for the arrow shapes
-        arrow1points=[[0, -160], [10, 0], [0, 10], [-10, 0]]
-        arrow2points=[[0, -115], [7, -100], [-7, -100]]
-        arrow22points=[[-7, -100], [7, -100], [3, -95], [-3, -95]]
-        arrow23points=[[-3, -95], [3, -95], [10, 0], [0, 10], [10, 0]]
+        arrow1points=[[0, -160], [10, 0], [0, 10]]
+        arrow2points=[[0, -115], [7, -100], [3, -95],[10, 0], [0, 10]]
         
         #arrow3points=[]
         
@@ -55,10 +52,6 @@ class AltimeterWidget(QtGui.QWidget):
                                          [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow1points[1:-1])])
         self.arrow2Poly = QtGui.QPolygonF([ QtCore.QPointF(*p) for p in arrow2points] + 
                                          [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow2points[1:-1])])
-        self.arrow22Poly = QtGui.QPolygonF([ QtCore.QPointF(*p) for p in arrow22points] + 
-                                         [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow22points[1:-1])])
-        self.arrow23Poly = QtGui.QPolygonF([ QtCore.QPointF(*p) for p in arrow23points] + 
-                                         [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow23points[1:-1])])
 
         
         # Setup the user interface
@@ -100,8 +93,6 @@ class AltimeterWidget(QtGui.QWidget):
         qp.save()
         qp.rotate(self.altitude*3.6)
         qp.drawPolygon(self.arrow2Poly)
-        qp.drawPolygon(self.arrow22Poly)
-        qp.drawPolygon(self.arrow23Poly)
         qp.restore()
         
         qp.save()

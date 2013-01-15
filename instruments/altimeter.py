@@ -89,8 +89,8 @@ class AltimeterWidget(QtGui.QWidget):
         qp.drawRect(120, -15, 40, 30)
         qp.setPen(self.textAltPen)
         qp.setFont(self.textAltFont)
-        text=self.altitude
-        qp.drawText(155-qp.fontMetrics().width(str(text)), qp.fontMetrics().height()/4, str(text))
+        text="{:05.2f}".format(self.altitude)
+        qp.drawText(155-qp.fontMetrics().width(text), qp.fontMetrics().height()/4, text)
 
         # Draw the arrows
         
@@ -146,7 +146,7 @@ def main():
     app = QtGui.QApplication(sys.argv)
     altimeter = AltimeterWidget(2.50)
     thread = SerialThread()
-    thread.headingChanged.connect(compass.setAltitude)
+    thread.altitudeChanged.connect(altimeter.setAltitude)
     thread.start()
     sys.exit(app.exec_())
 

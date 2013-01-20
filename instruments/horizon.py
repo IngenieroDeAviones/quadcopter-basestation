@@ -182,6 +182,7 @@ def main():
     layout.addWidget(vscrollbar, 0, 1)
     mainWidget.setLayout(layout)
     mainWidget.setGeometry(300, 300, 360, 360)
+    mainWidget.setFixedSize(360, 360)
     mainWidget.show()
 #    thread = SerialThread()
 #    thread.headingChanged.connect(compass.setAltitude)

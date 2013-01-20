@@ -16,13 +16,14 @@ class SerialThread(QtCore.QThread):
         try:
             heading = 0.0
             for line in self.serial:
-                print(line)
                 l = line.strip().split()
-                if l[0] != "T:":
-                    continue
-                x = float(l[5]);
-                y = float(l[7]);
-                new_heading = math.atan2(y, x) / math.pi * 180
+#               if l[0] != "T:":
+#                   continue
+#               x = float(l[5]);
+#               y = float(l[7]);
+                #new_heading = math.atan2(y, x) / math.pi * 180
+                new_heading = float(l[3]) / math.pi * 180
+                print(new_heading)
 
                 if heading != new_heading:
                     heading = new_heading
@@ -76,7 +77,7 @@ class CompassWidget(QtGui.QWidget):
         
         # Draw the compass ring.
         qp.save()
-        qp.rotate(self.heading)
+        qp.rotate(-self.heading)
         self.drawRing(qp)
         qp.restore()
         
@@ -135,7 +136,7 @@ class CompassWidget(QtGui.QWidget):
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    compass = CompassWidget(15)
+    compass = CompassWidget()
     thread = SerialThread()
     thread.headingChanged.connect(compass.setHeading)
     thread.start()

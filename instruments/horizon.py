@@ -27,7 +27,7 @@ from PyQt4 import QtGui,  QtCore
 
 class AltimeterWidget(QtGui.QWidget):
     
-    def __init__(self, pitch=0, rotation=10):
+    def __init__(self, pitch=0, rotation=0):
         super(AltimeterWidget, self).__init__()
         self.rotation=rotation
         self.pitch=pitch
@@ -162,7 +162,21 @@ class AltimeterWidget(QtGui.QWidget):
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    altimeter = AltimeterWidget(2.50)
+    mainWidget = QtGui.QWidget()
+    altimeter = AltimeterWidget()
+    vscrollbar = QtGui.QScrollBar(QtCore.Qt.Vertical)
+    vscrollbar.valueChanged.connect(altimeter.setPitch)
+    vscrollbar.setRange(-90, 90)
+    hscrollbar = QtGui.QScrollBar(QtCore.Qt.Horizontal)
+    hscrollbar.valueChanged.connect(altimeter.setRotation)
+    hscrollbar.setRange(-90, 90)
+    layout = QtGui.QGridLayout()
+    layout.addWidget(altimeter, 0, 0)
+    layout.addWidget(hscrollbar, 1, 0)
+    layout.addWidget(vscrollbar, 0, 1)
+    mainWidget.setLayout(layout)
+    mainWidget.setGeometry(300, 300, 360, 360)
+    mainWidget.show()
 #    thread = SerialThread()
 #    thread.headingChanged.connect(compass.setAltitude)
 #    thread.start()

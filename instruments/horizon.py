@@ -155,9 +155,15 @@ class AltimeterWidget(QtGui.QWidget):
         qp.setPen(QtGui.QPen(QtCore.Qt.NoPen))
         qp.drawPolygon(QtCore.QPointF(-math.sqrt(2)*5, -170), QtCore.QPointF(math.sqrt(2)*5, -170), QtCore.QPointF(0, -160))
         qp.restore()
+        
         qp.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-        qp.setBrush(QtGui.QColor(255, 255, 255))
+        qp.setBrush(QtGui.QColor(255, 102, 0))        
         qp.drawPolygon(QtCore.QPointF(0, -160), QtCore.QPointF(math.sqrt(2)*7.5, -145), QtCore.QPointF(-math.sqrt(2)*7.5, -145))
+
+        qp.setPen(QtGui.QPen(QtGui.QColor(255, 102, 0), 6))
+        qp.drawLine(-100, 0, -30, 0)
+        qp.drawLine(-0.5, 0, 0.5, 0)
+        qp.drawLine(30, 0, 100, 0)
         
 
 def main():

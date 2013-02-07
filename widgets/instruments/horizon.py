@@ -4,26 +4,6 @@ import sys
 import math
 from PyQt4 import QtGui,  QtCore
 
-#class SerialThread(QtCore.QThread):
-#    altitudeChanged = QtCore.pyqtSignal(float)
-#
-#    def __init__(self):
-#        super(SerialThread, self).__init__()
-#        self.serial = sys.stdin
-#
-#    def run(self):
-#        try:
-#            altitude = 0.0
-#            for line in self.serial:
-#                print(line)
-#                l = line.strip().split()
-#                if len(l)!= 5:
-#                    continue
-#                altitude = float(l[4])
-#                self.altitudeChanged.emit(altitude)
-#        except Exception as e:
-#            print(e)
-#            pass
 
 class AltimeterWidget(QtGui.QWidget):
     

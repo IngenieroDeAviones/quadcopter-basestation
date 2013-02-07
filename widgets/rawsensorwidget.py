@@ -9,6 +9,7 @@ class RawSensorWidget(QtGui.QWidget):
         sensorDataParser.gyroscopeData.connect(self.gyroData)
         sensorDataParser.accelerometerData.connect(self.accelData)
         sensorDataParser.magnetometerData.connect(self.compassData)
+        sensorDataParser.barrometerData.connect(self.barroData)
 
         self.gyroX = QtGui.QLabel()
         self.gyroY = QtGui.QLabel()
@@ -70,10 +71,24 @@ class RawSensorWidget(QtGui.QWidget):
         compassBox.layout.addWidget(QtGui.QLabel('Gauss'), 2, 2)
         compassBox.setLayout(compassBox.layout)
 
+        self.barroPressure = QtGui.QLabel()
+        self.barroHeight = QtGui.QLabel()
+
+        barroBox = QtGui.QGroupBox('Magnetometer')
+        barroBox.layout = QtGui.QGridLayout()
+        barroBox.layout.addWidget(QtGui.QLabel('p:'), 0, 0)
+        barroBox.layout.addWidget(QtGui.QLabel('h:'), 1, 0)
+        barroBox.layout.addWidget(self.barroPressure, 0, 1)
+        barroBox.layout.addWidget(self.barroHeight, 1, 1)
+        barroBox.layout.addWidget(QtGui.QLabel('Pa'), 0, 2)
+        barroBox.layout.addWidget(QtGui.QLabel('m'), 1, 2)
+        barroBox.setLayout(barroBox.layout)
+
         self.layout = QtGui.QVBoxLayout()
         self.layout.addWidget(gyroBox)
         self.layout.addWidget(accelBox)
         self.layout.addWidget(compassBox)
+        self.layout.addWidget(barroBox)
         self.setLayout(self.layout)
 
 
@@ -93,6 +108,11 @@ class RawSensorWidget(QtGui.QWidget):
         self.compassX.setText(str(x))
         self.compassY.setText(str(y))
         self.compassZ.setText(str(z))
+
+
+    def barroData(self, pressure, height):
+        self.barroPressure.setText(str(pressure))
+        self.barroHeight.setText(str(height))
 
 
 if __name__ == '__main__':

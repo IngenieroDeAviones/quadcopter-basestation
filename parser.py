@@ -47,8 +47,8 @@ class ParserThread(QtCore.QThread):
 class SensorDataParser(QtCore.QObject):
     gyroscopeData = QtCore.pyqtSignal(float, float, float)
     accelerometerData = QtCore.pyqtSignal(float, float, float)
-    magnetometerData = QtCore.pyqtSignal(float, float, float)
-    barrometerData = QtCore.pyqtSignal(float)
+    magnetometerData = QtCore.pyqtSignal(float, float, float, float)
+    barrometerData = QtCore.pyqtSignal(float, float)
     gpsData = QtCore.pyqtSignal(float, float, float, float)
     currentData = QtCore.pyqtSignal(str, list)
     temperatureData = QtCore.pyqtSignal(str, list)
@@ -64,9 +64,9 @@ class SensorDataParser(QtCore.QObject):
         elif sensor[0] == 'A':
             self.accelerometerData.emit(*map(float, data[:3]))
         elif sensor[0] == 'M':
-            self.magnetometerData.emit(*map(float, data[:3]))
+            self.magnetometerData.emit(*map(float, data[:4]))
         elif sensor[0] == 'B':
-            self.barrometerData.emit(float(data[0]))
+            self.barrometerData.emit(*map(float, data[:2]))
         elif sensor[0] == 'P':
             pass
         elif sensor[0] == 'C':

@@ -4,25 +4,6 @@ import sys
 import math
 from PyQt4 import QtGui,  QtCore
 
-class SerialThread(QtCore.QThread):
-    altitudeChanged = QtCore.pyqtSignal(float)
-
-    def __init__(self):
-        super(SerialThread, self).__init__()
-        self.serial = sys.stdin
-
-    def run(self):
-        try:
-            altitude = 0.0
-            for line in self.serial:
-                l = line.strip().split()
-                if len(l)!= 5:
-                    continue
-                altitude = float(l[4])
-                self.altitudeChanged.emit(altitude)
-        except Exception as e:
-            print(e)
-            pass
 
 class AltimeterWidget(QtGui.QWidget):
     
@@ -134,10 +115,15 @@ class AltimeterWidget(QtGui.QWidget):
         qp.restore()
         
 def main():
+    import os
+    sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
+    import parser
+
     app = QtGui.QApplication(sys.argv)
     altimeter = AltimeterWidget(2.50)
-    thread = SerialThread()
-    thread.altitudeChanged.connect(altimeter.setAltitude)
+    thread = parser.ParserThread(open('/dev/arduino'))
+    sensorParser = parser.SensorDataParser(thread)
+    sensorParser.barrometerData.connect(lambda p, h: altimeter.setAltitude(h))
     thread.start()
     sys.exit(app.exec_())
 

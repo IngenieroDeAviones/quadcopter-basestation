@@ -5,34 +5,6 @@ import math
 from PyQt4 import QtGui,  QtCore
 
 
-class SerialThread(QtCore.QThread):
-    headingChanged = QtCore.pyqtSignal(float)
-
-    def __init__(self):
-        super(SerialThread, self).__init__()
-        self.serial = sys.stdin
-
-    def run(self):
-        try:
-            heading = 0.0
-            for line in self.serial:
-                l = line.strip().split()
-#               if l[0] != "T:":
-#                   continue
-#               x = float(l[5]);
-#               y = float(l[7]);
-                #new_heading = math.atan2(y, x) / math.pi * 180
-                new_heading = float(l[3]) / math.pi * 180
-                print(new_heading)
-
-                if heading != new_heading:
-                    heading = new_heading
-                    print(heading)
-                    self.headingChanged.emit(heading)
-        except Exception as e:
-            print(e)
-            pass
-
 
 class CompassWidget(QtGui.QWidget):
     
@@ -135,10 +107,15 @@ class CompassWidget(QtGui.QWidget):
 
 
 def main():
+    import os
+    sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
+    import parser
+
     app = QtGui.QApplication(sys.argv)
     compass = CompassWidget()
-    thread = SerialThread()
-    thread.headingChanged.connect(compass.setHeading)
+    thread = parser.ParserThread(open('/dev/arduino'))
+    sensorParser = parser.SensorDataParser(thread)
+    sensorParser.magnetometerData.connect(lambda x, y, z, h: compass.setHeading(h))
     thread.start()
     sys.exit(app.exec_())
 

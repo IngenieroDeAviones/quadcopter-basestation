@@ -16,6 +16,8 @@ class ParserThread(QtCore.QThread):
 
     def __init__(self, stream):
         super().__init__()
+        if type(stream) == str:
+            stream = open(stream)
         self.stream = stream
 
 

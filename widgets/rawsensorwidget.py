@@ -74,7 +74,7 @@ class RawSensorWidget(QtGui.QWidget):
         self.barroPressure = QtGui.QLabel()
         self.barroHeight = QtGui.QLabel()
 
-        barroBox = QtGui.QGroupBox('Magnetometer')
+        barroBox = QtGui.QGroupBox('Barrometer')
         barroBox.layout = QtGui.QGridLayout()
         barroBox.layout.addWidget(QtGui.QLabel('p:'), 0, 0)
         barroBox.layout.addWidget(QtGui.QLabel('h:'), 1, 0)
@@ -116,7 +116,14 @@ class RawSensorWidget(QtGui.QWidget):
 
 
 if __name__ == '__main__':
+    import os
+    sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
+    import parser
+
     app = QtGui.QApplication(sys.argv)
-    sensors = RawSensorWidget(None)
-    sensors.show()
+    thread = parser.ParserThread('/dev/arduino')
+    thread.start()
+    sensors = parser.SensorDataParser(thread)
+    widget = RawSensorWidget(sensors)
+    widget.show()
     sys.exit(app.exec_())

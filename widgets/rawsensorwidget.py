@@ -1,5 +1,4 @@
 
-import sys
 from PyQt4 import QtCore, QtGui
 
 
@@ -117,6 +116,7 @@ class RawSensorWidget(QtGui.QWidget):
 
 if __name__ == '__main__':
     import os
+    import sys
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
     import parser
 

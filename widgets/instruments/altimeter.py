@@ -118,12 +118,14 @@ def main():
     import os
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
     import parser
+    import sensor
 
     app = QtGui.QApplication(sys.argv)
     altimeter = AltimeterWidget(2.50)
     thread = parser.ParserThread(open('/dev/arduino'))
-    sensorParser = parser.SensorDataParser(thread)
-    sensorParser.barrometerData.connect(lambda p, h: altimeter.setAltitude(h))
+    barrometer = sensor.Barrometer()
+    sensorParser = parser.SensorDataParser(thread, [barrometer])
+    barrometer.dataAdded.connect(lambda d: altimeter.setAltitude(d[1]))
     thread.start()
     sys.exit(app.exec_())
 

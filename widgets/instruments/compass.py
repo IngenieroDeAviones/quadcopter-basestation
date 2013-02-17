@@ -110,12 +110,14 @@ def main():
     import os
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
     import parser
+    import sensor
 
     app = QtGui.QApplication(sys.argv)
     compass = CompassWidget()
     thread = parser.ParserThread(open('/dev/arduino'))
-    sensorParser = parser.SensorDataParser(thread)
-    sensorParser.magnetometerData.connect(lambda x, y, z, h: compass.setHeading(h))
+    magnetometer = sensor.Magnetometer()
+    sensorParser = parser.SensorDataParser(thread, [magnetometer])
+    magnetometer.dataAdded.connect(lambda d: compass.setHeading(d[3]))
     thread.start()
     sys.exit(app.exec_())
 

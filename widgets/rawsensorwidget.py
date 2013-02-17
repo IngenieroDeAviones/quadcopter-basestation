@@ -51,7 +51,7 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     thread = parser.ParserThread('/dev/arduino')
     thread.start()
-    sensorParser = parser.SensorDataParser(thread, **sensorList)
+    sensorParser = parser.SensorDataParser(thread, sensorList)
     widget = RawSensorWidget(sensorParser.sensors.values())
     widget.show()
     sys.exit(app.exec_())

@@ -48,10 +48,13 @@ class ParserThread(QtCore.QThread):
 
 
 class SensorDataParser(QtCore.QObject):
-    def __init__(self, parserThread, **sensors):
+    def __init__(self, parserThread, sensors):
         super().__init__()
         parserThread.sensorData.connect(self.parseData)
-        self.sensors = sensors
+        if type(sensors) == dict:
+            self.sensors = sensors
+        else:
+            self.sensors = { s.char: s for s in sensors }
 
 
     def parseData(self, sensor, data):

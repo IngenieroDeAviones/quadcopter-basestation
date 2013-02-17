@@ -21,6 +21,7 @@ class Sensor(QtCore.QObject):
 
 
     def appendData(self, data, timestamp=None):
+        data = list(map(float, data))
         if timestamp is None:
             timestamp = datetime.datetime.now()
         for channel, d in zip(self.channels, data):
@@ -30,25 +31,29 @@ class Sensor(QtCore.QObject):
 
 
 class Sensor3D(Sensor):
-    def __init__(self, units=None, bufferLength=1000, name=None):
-        super().__init__(channels = ['x', 'y', 'z'], units = units, bufferLength = bufferLength)
+    def __init__(self, channels =['x', 'y', 'z'], units=None, bufferLength=1000, name=None):
+        super().__init__(channels = channels, units = units, bufferLength = bufferLength)
 
 
 class Gyroscope(Sensor3D):
+    char = 'G'
     def __init__(self, bufferLength=1000, name = None):
         super().__init__(units = '°/s', bufferLength = bufferLength)
 
 
 class Magnetometer(Sensor3D):
+    char = 'M'
     def __init__(self, bufferLength=1000, name = None):
-        super().__init__(units = 'Gauss', bufferLength = bufferLength)
+        super().__init__(channels = ['x', 'y', 'z', 'h'], units = 'Gauss', bufferLength = bufferLength)
 
 
 class Accelerometer(Sensor3D):
+    char = 'A'
     def __init__(self, bufferLength=1000, name = None):
         super().__init__(units = 'g', bufferLength = bufferLength)
 
 
 class Barrometer(Sensor):
+    char = 'B'
     def __init__(self, bufferLength=1000, name = None):
         super().__init__(channels = ['pressure', 'height'], units = ['Pa', 'm'], bufferLength = bufferLength)

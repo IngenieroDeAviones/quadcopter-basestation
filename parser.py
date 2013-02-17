@@ -9,10 +9,11 @@ class InvalidSyntaxError(Exception):
 
 
 class ParserThread(QtCore.QThread):
+    daemon = True
+
     notification = QtCore.pyqtSignal(list, str)
     error = QtCore.pyqtSignal(list, str)
     sensorData = QtCore.pyqtSignal(list, list)
-
 
     def __init__(self, stream):
         super().__init__()
@@ -54,5 +55,5 @@ class SensorDataParser(QtCore.QObject):
 
 
     def parseData(self, sensor, data):
-        if sensor in self.sensors:
-            self.sensors[sensor].appendData(data)
+        if sensor[0] in self.sensors:
+            self.sensors[sensor[0]].appendData(data)

@@ -1,112 +1,53 @@
 
 from PyQt4 import QtCore, QtGui
 
-import graphwidget
+import plotwidget
 
 
 class SensorTreeWidget(QtGui.QTreeWidget):
-    def __init__(self, parent=None):
+    def __init__(self, sensors, parent=None):
         super().__init__(parent)
         self.setColumnCount(1)
         self.header().close()
         self.setSelectionMode(self.ExtendedSelection)
 
-        item = QtGui.QTreeWidgetItem(self, ['Gyroscope'])
-        QtGui.QTreeWidgetItem(item, ['x'])
-        QtGui.QTreeWidgetItem(item, ['y'])
-        QtGui.QTreeWidgetItem(item, ['z'])
-        item.setExpanded(True)
-        self.addTopLevelItem(item)
-
-        item = QtGui.QTreeWidgetItem(self, ['Accelerometer'])
-        QtGui.QTreeWidgetItem(item, ['x'])
-        QtGui.QTreeWidgetItem(item, ['y'])
-        QtGui.QTreeWidgetItem(item, ['z'])
-        item.setExpanded(True)
-        self.addTopLevelItem(item)
-
-        item = QtGui.QTreeWidgetItem(self, ['Magnetometer'])
-        QtGui.QTreeWidgetItem(item, ['x'])
-        QtGui.QTreeWidgetItem(item, ['y'])
-        QtGui.QTreeWidgetItem(item, ['z'])
-        item.setExpanded(True)
-        self.addTopLevelItem(item)
-
-        item = QtGui.QTreeWidgetItem(self, ['Barrometer'])
-        QtGui.QTreeWidgetItem(item, ['pressure'])
-        QtGui.QTreeWidgetItem(item, ['height'])
-        item.setExpanded(True)
-        self.addTopLevelItem(item)
+        for sensor in sensors:
+            item = QtGui.QTreeWidgetItem(self, [sensor.name])
+            for channel in sensor.channels:
+                QtGui.QTreeWidgetItem(item, [channel])
+            item.setExpanded(True)
+            self.addTopLevelItem(item)
 
 
-class SensorGraph(graphwidget.GraphWidget):
-    def __init__(self, sensorParser, parent=None)
+class SensorGraph(plotwidget.PlotWidget):
+    def __init__(self, sensors, parent=None):
         super().__init__(parent)
-        self.sensors = {
-                'Gyroscope.x': None,
-                'Gyroscope.y': None,
-                'Gyroscope.z': None,
-                'Accelerometer.x': None,
-                'Accelerometer.y': None,
-                'Accelerometer.z': None,
-                'Magnetometer.x': None,
-                'Magnetometer.y': None,
-                'Magnetometer.z': None,
-                'Barrometer.pressure': None,
-                'Barrometer.height': None
-            }
-        for key in self.sensors:
-            self.sensors[key] = self.addGraph([], [])
-
-        self.sensorParser = sensorParser
-        sensorParser.gyroscopeData.connect(gyroData)
-#        sensorParser.gyroscopeData.connect(lambda *new: appendData('Gyroscope', new))
-#        sensorParser.accelerometerData.connect(lambda *new: appendData('Accelerometer', new))
-#        sensorParser.magnetometerData.connect(lambda *new: appendData('Magnetometer', new))
-#        sensorParser.barrometerData.connect(lambda *new: appendData('barrometer', new))
-
-        self.n = 1000
-
-
-    def replot(self)
-        for data in self.plotSet:
-            axis.plot()
-
-    def gyroData(self, x, y, z):
-        self.data[self.sensors['Magnetometer.x']][0]._y.append(x)
-
-    def appendData(self, dataset, newdata):
-        if len(dataset) >= self.n):
-            dataset = [self.sensors[dataset + p][1:] + [newdata[i] for i,p in enumerate(('x','y','z'))]
-        else:
-            for i in range(3):
-                dataset[i].append(newdata[i])
-        self.replot()
-
-
-    def setPlotSet(self, plotSet):
-        plotSet = {self.sensors[name] for name in plotSet}
-        self.replot()
-            
-
+        self.sensors = sensors
+        self.graphs = []
+        for i, sensor in enumerate(self.sensors):
+            sensor.dataAdded.connect(self.replot)
+            for channel in sensor.channels:
+                data = sensor.data[channel]
+                self.graphs.append(self.newGraph(data[0], data[1]))
 
 
 class SensorGraphWidget(QtGui.QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, sensors, parent=None):
         super().__init__(parent)
 
-        self.sensorTree = SensorTreeWidget(self)
+        self.sensorTree = SensorTreeWidget(sensors)
+        self.sensorTree.setMaximumWidth(200)
 #        self.sensorTree.selectionChanged.connect(self.selectionChanged)
-        self.graph = graphwidget.GraphWidget(self)
+        self.graph = SensorGraph(sensors)
 
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.sensorTree)
         layout.addWidget(self.graph)
         self.setLayout(layout)
 
-#    def selectionChanged(new, old):
-#        self.graph.
-        
+    def selectionChanged(new, old):
+        print(new)
+
 
 
 if __name__ == '__main__':
@@ -114,8 +55,17 @@ if __name__ == '__main__':
     import sys
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
     import parser
+    import sensor
+
+    sensorList = [sensor.Gyroscope(),
+                  sensor.Accelerometer(),
+                  sensor.Magnetometer(),
+                  sensor.Barrometer()]
 
     app = QtGui.QApplication(sys.argv)
-    widget = SensorGraphWidget(None)
+    thread = parser.ParserThread('/dev/arduino')
+    thread.start()
+    sensorParser = parser.SensorDataParser(thread, sensorList)
+    widget = SensorGraphWidget(sensorParser.sensors.values())
     widget.show()
     sys.exit(app.exec_())

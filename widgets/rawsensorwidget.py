@@ -43,10 +43,10 @@ if __name__ == '__main__':
     import parser
     import sensor
 
-    sensorList = {  'G': sensor.Gyroscope(),
-                    'A': sensor.Accelerometer(),
-                    'M': sensor.Magnetometer(),
-                    'B': sensor.Barrometer()}
+    sensorList = [sensor.Gyroscope(),
+                  sensor.Accelerometer(),
+                  sensor.Magnetometer(),
+                  sensor.Barrometer()]
 
     app = QtGui.QApplication(sys.argv)
     thread = parser.ParserThread('/dev/arduino')

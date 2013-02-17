@@ -44,7 +44,7 @@ class Gyroscope(Sensor3D):
 class Magnetometer(Sensor3D):
     char = 'M'
     def __init__(self, bufferLength=1000, name = None):
-        super().__init__(channels = ['x', 'y', 'z', 'h'], units = 'Gauss', bufferLength = bufferLength)
+        super().__init__(channels = ['x', 'y', 'z', 'heading'], units = ['Gauss']*3 + ['degrees'], bufferLength = bufferLength)
 
 
 class Accelerometer(Sensor3D):

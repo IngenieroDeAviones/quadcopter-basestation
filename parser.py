@@ -13,6 +13,7 @@ class ParserThread(QtCore.QThread):
 
     notification = QtCore.pyqtSignal(list, str)
     error = QtCore.pyqtSignal(list, str)
+    nextIteration = QtCore.pyqtSignal(int)
     sensorData = QtCore.pyqtSignal(list, list)
 
     def __init__(self, stream):
@@ -34,6 +35,8 @@ class ParserThread(QtCore.QThread):
             self.notification.emit(cmd_type, ' '.join(arguments))
         elif cmd == 'E':
             self.error.emit(cmd_type, ' '.join(arguments))
+        elif cmd == 'I':
+            self.nextIteration.emit(arguments[0])
         elif cmd == 'S':
             self.sensorData.emit(cmd_type, arguments)
 
@@ -55,6 +58,8 @@ class SensorDataParser(QtCore.QObject):
             self.sensors = sensors
         else:
             self.sensors = { s.char: s for s in sensors }
+        for sensor in self.sensors.values():
+            sensor.parser = self
 
 
     def parseData(self, sensor, data):

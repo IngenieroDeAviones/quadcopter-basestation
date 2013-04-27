@@ -76,10 +76,10 @@ class AltimeterWidget(QtGui.QWidget):
         """ Draw the background"""
         qp.setPen(QtGui.QColor(102, 51, 0))
         qp.setBrush(QtGui.QColor(102, 51, 0))
-        qp.drawRect(QtCore.QRectF(-500, 0, 1000, 500))
+        qp.drawRect(QtCore.QRectF(-5000, 0, 10000, 5000))
         qp.setPen(QtGui.QColor(0, 153, 255))
         qp.setBrush(QtGui.QColor(0, 153, 255))
-        qp.drawRect(QtCore.QRectF(-500, -500, 1000, 500))
+        qp.drawRect(QtCore.QRectF(-5000, -5000, 10000, 5000))
         
         # draw the pitch lines
         

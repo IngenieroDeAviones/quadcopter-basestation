@@ -5,6 +5,7 @@ from sensors import sensor
 
 class Magnetometer(sensor.Sensor3D):
     char = 'M'
+    calibration = {'cx': 0, 'cy': 0, 'cz': 0, 'a': 1, 'b': 1, 'c': 1}
     def __init__(self, bufferLength=200, name = None):
         super().__init__(channelNames = ['rawx', 'rawy', 'rawz'], units = [None]*3, bufferLength = bufferLength, name = name)
         self.channels.update(OrderedDict([ (name, sensor.Channel(self, name, 'Gauss', bufferLength)) for name in ['x', 'y', 'z']]))

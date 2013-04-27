@@ -35,7 +35,7 @@ class Sensor(QtCore.QObject):
 
     def __init__(self, channelNames, units=None, bufferLength=200, name=None):
         super().__init__()
-        self.name = name or self.__class__.__qualname__
+        self.name = name or self.__class__.__name__
         if type(units) == str or units is None:
             units = [units] * len(channelNames)
 
@@ -72,8 +72,8 @@ class Sensor(QtCore.QObject):
     def saveCalibration(self, calibrationFile='data/calibration.ini'):
         f = configparser.RawConfigParser()
         f.read(calibrationFile)
-        f[self.name] = calibration
-        f.write(calibrationFile)
+        f[self.name] = self.calibration
+        f.write(open(calibrationFile,'w'))
 
 
     def __getitem__(self, key):

@@ -28,7 +28,7 @@ class Recorder(QtCore.QObject):
 
     def newData(self, data):
         sensor = self.sender()
-        for i, channel in enumerate(sensor.channels.values()):
+        for i, channel in enumerate(sensor):
             if channel in self.channels:
                 self.data[channel] = data[i]
 

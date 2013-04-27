@@ -91,12 +91,12 @@ class SensorGraphWidget(QtGui.QWidget):
 
 if __name__ == '__main__':
     import parser
-    import sensor
+    from sensors import gyroscope, accelerometer, magnetometer, barrometer
 
-    sensorList = [sensor.Gyroscope(),
-                  sensor.Accelerometer(),
-                  sensor.Magnetometer(),
-                  sensor.Barrometer()]
+    sensorList = [gyroscope.Gyroscope(),
+                  accelerometer.Accelerometer(),
+                  magnetometer.Magnetometer(),
+                  barrometer.Barrometer()]
 
     app = QtGui.QApplication(sys.argv)
     thread = parser.ParserThread('/dev/arduino')

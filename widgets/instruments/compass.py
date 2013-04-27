@@ -5,7 +5,6 @@ import math
 from PyQt4 import QtGui,  QtCore
 
 
-
 class CompassWidget(QtGui.QWidget):
     
     def __init__(self,  heading=0):
@@ -110,14 +109,18 @@ def main():
     import os
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
     import parser
-    import sensor
+    from sensors import sensor, magnetometer
+
+    def heading(data):
+        x, y, z = data
+        return math.degrees(math.atan2(y,x))
 
     app = QtGui.QApplication(sys.argv)
     compass = CompassWidget()
     thread = parser.ParserThread(open('/dev/arduino'))
-    magnetometer = sensor.Magnetometer()
+    magnetometer = magnetometer.Magnetometer()
     sensorParser = parser.SensorDataParser(thread, [magnetometer])
-    magnetometer.dataAdded.connect(lambda d: compass.setHeading(d[3]))
+    magnetometer.dataAdded.connect(lambda t,d: compass.setHeading(heading(d)))
     thread.start()
     sys.exit(app.exec_())
 

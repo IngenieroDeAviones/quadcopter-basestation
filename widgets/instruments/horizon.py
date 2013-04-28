@@ -5,10 +5,10 @@ import math
 from PyQt4 import QtGui,  QtCore
 
 
-class AltimeterWidget(QtGui.QWidget):
+class HorizonWidget(QtGui.QWidget):
     
     def __init__(self, pitch=0, rotation=0):
-        super(AltimeterWidget, self).__init__()
+        super(HorizonWidget, self).__init__()
         self.rotation=rotation
         self.pitch=pitch
         
@@ -56,7 +56,7 @@ class AltimeterWidget(QtGui.QWidget):
         self.update()
     
     def paintEvent(self, e):
-        """ Draw the altimeter """
+        """ Draw the horizon """
         qp = QtGui.QPainter()
         qp.begin(self)
         qp.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -147,28 +147,29 @@ class AltimeterWidget(QtGui.QWidget):
         
 
 def main():
-    app = QtGui.QApplication(sys.argv)
-    mainWidget = QtGui.QWidget()
-    altimeter = AltimeterWidget()
-    vscrollbar = QtGui.QScrollBar(QtCore.Qt.Vertical)
-    vscrollbar.valueChanged.connect(altimeter.setPitch)
-    vscrollbar.setRange(-90, 90)
-    hscrollbar = QtGui.QScrollBar(QtCore.Qt.Horizontal)
-    hscrollbar.valueChanged.connect(altimeter.setRotation)
-    hscrollbar.setRange(-90, 90)
-    layout = QtGui.QGridLayout()
-    layout.addWidget(altimeter, 0, 0)
-    layout.addWidget(hscrollbar, 1, 0)
-    layout.addWidget(vscrollbar, 0, 1)
-    mainWidget.setLayout(layout)
-    mainWidget.setGeometry(300, 300, 360, 360)
-    mainWidget.setFixedSize(360, 360)
-    mainWidget.show()
-#    thread = SerialThread()
-#    thread.headingChanged.connect(compass.setAltitude)
-#    thread.start()
-    sys.exit(app.exec_())
+    import os
+    sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
+    import parser
+    from sensors import sensor, accelerometer
+    
+    def pitch(data):
+        x, y, z = data
+        print(z)
+        return math.degrees(math.atan2(z,-y))
 
+    def roll(data):
+        x, y, z = data
+        return math.degrees(math.atab2(z,x))
+
+    app = QtGui.QApplication(sys.argv)
+    horizon = HorizonWidget()
+    thread = parser.ParserThread(open('/dev/arduino'))
+    accelerometer = accelerometer.Accelerometer()
+    sensorParser = parser.SensorDataParser(thread, [accelerometer])
+    accelerometer.dataAdded.connect(lambda d: horizon.setPitch(pitch(d)))
+    accelerometer.dataAdded.connect(lambda d: horizon.setRotation(roll(d)))
+    thread.start
+    sys.exit(app.exec_())
 
 if __name__ == '__main__':
     main()

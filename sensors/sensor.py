@@ -60,12 +60,9 @@ class Sensor(QtCore.QObject):
     def loadCalibration(self, calibrationFile='data/calibration.ini'):
         f = configparser.RawConfigParser()
         f.read(calibrationFile)
-        print(self.name)
         try:
             self.calibration = { key: float(value) for (key, value) in f[self.name].items()}
-            print(self.calibration)
-        except Exception as e:
-            print(e)
+        except:
             pass
 
 

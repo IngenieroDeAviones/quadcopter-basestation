@@ -6,12 +6,14 @@ from PyQt4 import QtGui,  QtCore
 
 
 class HorizonWidget(QtGui.QWidget):
+    rotation = 0
+    pitch = 0
     
-    def __init__(self, pitch=0, rotation=0):
+    def __init__(self, accelerometer):
         super(HorizonWidget, self).__init__()
-        self.rotation=rotation
-        self.pitch=pitch
-        
+        self.accelerometer = accelerometer
+        self.accelerometer.dataAdded.connect(self.newData)
+
         #Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
         self.mediumPen=QtGui.QPen(QtCore.Qt.white,  4,  cap=QtCore.Qt.FlatCap)
@@ -23,24 +25,6 @@ class HorizonWidget(QtGui.QWidget):
         
         self.textAltPen=QtGui.QPen(QtCore.Qt.white, 2,  cap=QtCore.Qt.FlatCap)
         self.textAltFont=QtGui.QFont("Times", 12, 75)
-        
-#        # Define points for the arrow shapes
-#        arrow1points=[[0, -160], [10, 0], [0, 10], [-10, 0]]
-#        arrow2points=[[0, -115], [7, -100], [-7, -100]]
-#        arrow22points=[[-7, -100], [7, -100], [3, -95], [-3, -95]]
-#        arrow23points=[[-3, -95], [3, -95], [10, 0], [0, 10], [10, 0]]
-#        
-#        #arrow3points=[]
-#        
-#        self.arrow1Poly = QtGui.QPolygonF([ QtCore.QPointF(*p) for p in arrow1points] + 
-#                                         [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow1points[1:-1])])
-#        self.arrow2Poly = QtGui.QPolygonF([ QtCore.QPointF(*p) for p in arrow2points] + 
-#                                         [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow2points[1:-1])])
-#        self.arrow22Poly = QtGui.QPolygonF([ QtCore.QPointF(*p) for p in arrow22points] + 
-#                                         [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow22points[1:-1])])
-#        self.arrow23Poly = QtGui.QPolygonF([ QtCore.QPointF(*p) for p in arrow23points] + 
-#                                         [ QtCore.QPointF(-p[0], p[1]) for p in reversed(arrow23points[1:-1])])
-
         
         # Setup the user interface
         self.setGeometry(300, 300, 340, 340)
@@ -73,7 +57,7 @@ class HorizonWidget(QtGui.QWidget):
         qp.rotate(self.rotation)
         qp.save()
         qp.translate(0, self.pitch*16/2.5)
-        """ Draw the background"""
+        # Draw the background
         qp.setPen(QtGui.QColor(102, 51, 0))
         qp.setBrush(QtGui.QColor(102, 51, 0))
         qp.drawRect(QtCore.QRectF(-5000, 0, 10000, 5000))
@@ -144,6 +128,16 @@ class HorizonWidget(QtGui.QWidget):
         qp.drawLine(-100, 0, -30, 0)
         qp.drawLine(-0.5, 0, 0.5, 0)
         qp.drawLine(30, 0, 100, 0)
+
+
+    def newData(self):
+        x = self.accelerometer['x'].latest()
+        y = self.accelerometer['y'].latest()
+        z = self.accelerometer['z'].latest()
+        
+        self.setRotation(math.degrees(math.atan2(-y,z)))
+        self.setPitch(math.degrees(math.atan2(x, math.sqrt(y*y + z*z))))
+
         
 
 def main():
@@ -161,13 +155,11 @@ def main():
         return math.degrees(math.atan2(-y,z))
 
     app = QtGui.QApplication(sys.argv)
-    horizon = HorizonWidget()
     thread = parser.ParserThread(open('/dev/arduino'))
     accelerometer = accelerometer.Accelerometer()
     sensorParser = parser.SensorDataParser(thread, [accelerometer])
-    accelerometer.dataAdded.connect(lambda t, d: horizon.setPitch(pitch(d)))
-    accelerometer.dataAdded.connect(lambda t, d: horizon.setRotation(roll(d)))
     thread.start()
+    horizon = HorizonWidget(accelerometer)
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

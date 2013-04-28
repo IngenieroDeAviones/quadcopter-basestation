@@ -14,8 +14,11 @@ class Channel:
         self.units = unit
 
 
-    def data(self):
-        return sensor.channel[self.name]
+    def latest(self):
+        try:
+            return self.data[1][-1]
+        except IndexError:
+            return 0.0
 
 
     def __len__(self):

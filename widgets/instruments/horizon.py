@@ -154,21 +154,20 @@ def main():
     
     def pitch(data):
         x, y, z = data
-        print(z)
-        return math.degrees(math.atan2(z,-y))
+        return math.degrees(math.atan2(x, math.sqrt(y*y + z*z)))
 
     def roll(data):
         x, y, z = data
-        return math.degrees(math.atab2(z,x))
+        return math.degrees(math.atan2(-y,z))
 
     app = QtGui.QApplication(sys.argv)
     horizon = HorizonWidget()
     thread = parser.ParserThread(open('/dev/arduino'))
     accelerometer = accelerometer.Accelerometer()
     sensorParser = parser.SensorDataParser(thread, [accelerometer])
-    accelerometer.dataAdded.connect(lambda d: horizon.setPitch(pitch(d)))
-    accelerometer.dataAdded.connect(lambda d: horizon.setRotation(roll(d)))
-    thread.start
+    accelerometer.dataAdded.connect(lambda t, d: horizon.setPitch(pitch(d)))
+    accelerometer.dataAdded.connect(lambda t, d: horizon.setRotation(roll(d)))
+    thread.start()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

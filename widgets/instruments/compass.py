@@ -27,7 +27,7 @@ class CompassWidget(QtGui.QWidget):
                                          [ QtCore.QPointF(-p[0], p[1]) for p in reversed(planepoints[1:-1])])
         
         # Setup the user interface
-        #self.setGeometry(300, 300, 340, 340)
+        self.setGeometry(300, 300, 340, 340)
         #self.setWindowTitle('Compass')
         #self.show()
         

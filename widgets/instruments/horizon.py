@@ -35,8 +35,8 @@ class HorizonWidget(QtGui.QWidget):
         self.pitch=pitch
         self.update()
 
-    def setRotation(self,  rotation):
-        self.rotation=rotation
+    def setRoll(self, roll):
+        self.roll=roll
         self.update()
     
     def paintEvent(self, e):
@@ -54,7 +54,7 @@ class HorizonWidget(QtGui.QWidget):
     def drawPitch(self, qp):
         
         qp.save()
-        qp.rotate(self.rotation)
+        qp.rotate(self.roll)
         qp.save()
         qp.translate(0, self.pitch*16/2.5)
         # Draw the background
@@ -73,15 +73,15 @@ class HorizonWidget(QtGui.QWidget):
 
         y=-18
         for angle in range(-450, 450, 25):
-            if angle % 100 == 0:
+            if angle % 100 == 0 and y * 16 > -140 - self.pitch * 16 / 2.5:
                 qp.drawLine(-80, y*16, 80, y*16)
                 if angle != 0:
                     text=str(int(abs(angle)/10))
                     qp.drawText(-90-qp.fontMetrics().width(text), y*16+qp.fontMetrics().height()/4, text)
                     qp.drawText(90, y*16+qp.fontMetrics().height()/4, text)
-            elif angle % 50 == 0:
+            elif angle % 50 == 0 and y * 16 > -140 - self.pitch * 16 / 2.5:
                 qp.drawLine(-40, y*16, 40, y*16)
-            else:
+            elif y * 16 > -140 - self.pitch * 16 / 2.5:
                 qp.setPen(self.thinPen)
                 qp.drawLine(-20, y*16, 20, y*16)
             y+=1
@@ -89,10 +89,6 @@ class HorizonWidget(QtGui.QWidget):
         qp.restore()
         
         # Draw roll lines
-        qp.setPen(QtGui.QColor(0, 153, 255))
-        qp.setBrush(QtGui.QColor(0, 153, 255))
-        qp.drawRect(QtCore.QRectF(-170, -250, 340, 110))
-        
         qp.setPen(self.thinPen)
         qp.setFont(self.textAltFont)
         qp.setBrush(QtGui.QColor(255, 255, 255))
@@ -135,7 +131,7 @@ class HorizonWidget(QtGui.QWidget):
         y = self.accelerometer['y'].latest()
         z = self.accelerometer['z'].latest()
         
-        self.setRotation(math.degrees(math.atan2(-y,z)))
+        self.setRoll(math.degrees(math.atan2(-y,z)))
         self.setPitch(math.degrees(math.atan2(x, math.sqrt(y*y + z*z))))
 
         
@@ -146,14 +142,6 @@ def main():
     import parser
     from sensors import sensor, accelerometer
     
-    def pitch(data):
-        x, y, z = data
-        return math.degrees(math.atan2(x, math.sqrt(y*y + z*z)))
-
-    def roll(data):
-        x, y, z = data
-        return math.degrees(math.atan2(-y,z))
-
     app = QtGui.QApplication(sys.argv)
     thread = parser.ParserThread(open('/dev/arduino'))
     accelerometer = accelerometer.Accelerometer()

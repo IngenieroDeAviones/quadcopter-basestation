@@ -6,13 +6,15 @@ from PyQt4 import QtGui,  QtCore
 
 
 class HorizonWidget(QtGui.QWidget):
-    rotation = 0
+    roll = 0
     pitch = 0
     
-    def __init__(self, accelerometer):
+    def __init__(self, accelerometer=None):
         super(HorizonWidget, self).__init__()
+
         self.accelerometer = accelerometer
-        self.accelerometer.dataAdded.connect(self.newData)
+        if accelerometer:
+            self.accelerometer.dataAdded.connect(self.newData)
 
         #Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
@@ -27,7 +29,6 @@ class HorizonWidget(QtGui.QWidget):
         self.textAltFont=QtGui.QFont("Times", 12, 75)
         
         # Setup the user interface
-        self.setGeometry(300, 300, 340, 340)
         self.setWindowTitle('Horizon')
         self.show()
     
@@ -45,13 +46,17 @@ class HorizonWidget(QtGui.QWidget):
         qp.begin(self)
         qp.setRenderHint(QtGui.QPainter.Antialiasing)
         qp.setRenderHint(QtGui.QPainter.TextAntialiasing)
+
+        size=min(self.width()/340, self.height()/340)
+
+        qp.scale(size, size)
         qp.translate(170, 170)
         
         qp.save()
-        self.drawPitch(qp)
+        self.draw(qp)
         qp.restore()
         
-    def drawPitch(self, qp):
+    def draw(self, qp):
         
         qp.save()
         qp.rotate(self.roll)
@@ -130,12 +135,10 @@ class HorizonWidget(QtGui.QWidget):
         x = self.accelerometer['x'].latest()
         y = self.accelerometer['y'].latest()
         z = self.accelerometer['z'].latest()
-        
+    
         self.setRoll(math.degrees(math.atan2(-y,z)))
         self.setPitch(math.degrees(math.atan2(x, math.sqrt(y*y + z*z))))
-
-        
-
+    
 def main():
     import os
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path

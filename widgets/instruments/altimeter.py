@@ -8,7 +8,7 @@ from PyQt4 import QtGui,  QtCore
 class AltimeterWidget(QtGui.QWidget):
     altitude = 0
     
-    def __init__(self,  barometer):
+    def __init__(self,  barometer=None):
         super(AltimeterWidget, self).__init__()
         self.barometer = barometer
         if barometer:
@@ -53,6 +53,10 @@ class AltimeterWidget(QtGui.QWidget):
         qp.begin(self)
         qp.setRenderHint(QtGui.QPainter.Antialiasing)
         qp.setRenderHint(QtGui.QPainter.TextAntialiasing)
+
+        size=min(self.width()/340, self.height()/340)
+
+        qp.scale(size, size)
         qp.translate(170, 170)
         
         qp.save()

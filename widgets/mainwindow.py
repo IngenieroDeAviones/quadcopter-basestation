@@ -75,13 +75,21 @@ class CentralWidget(QtGui.QWidget):
         self.horizon = horizon.HorizonWidget()
 
         # Add widgets to centralWidget        
-        self.layout.addWidget(self.compass, 0, 0)
-        self.layout.addWidget(self.altimeter, 0, 1)
-        self.layout.addWidget(self.horizon, 0, 2)
+        self.layout.addWidget(self.compass, 0, 0, 3, 3)
+        self.layout.addWidget(self.altimeter, 2, 3, 3, 3)
+        self.layout.addWidget(self.horizon, 0, 6, 3, 3)
 
         # Add centralWidget to mainPanel
         parent.setCentralWidget(self)
 
+    def minimumHeightForWidth(self,w):
+        return w*5/9
+
+#    def resizeEvent(self, event):
+#       size = min(event.width / self.columnCount, event.height / self.rowCount)
+#
+#        for column in self.columnCount:
+#            self.layout
 
 def main():
 

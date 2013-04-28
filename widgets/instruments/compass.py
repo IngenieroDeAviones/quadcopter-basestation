@@ -8,7 +8,7 @@ from PyQt4 import QtGui,  QtCore
 class CompassWidget(QtGui.QWidget):
     heading = 0
     
-    def __init__(self,  magnetometer):
+    def __init__(self,  magnetometer=None):
         super(CompassWidget, self).__init__()
         self.magnetometer = magnetometer
         if magnetometer:
@@ -47,6 +47,10 @@ class CompassWidget(QtGui.QWidget):
         qp.begin(self)
         qp.setRenderHint(QtGui.QPainter.Antialiasing)
         qp.setRenderHint(QtGui.QPainter.TextAntialiasing)
+
+        size=min(self.width()/340, self.height()/340)
+
+        qp.scale(size, size)
         qp.translate(170,  170)
         
         # Draw the compass ring.
@@ -109,7 +113,6 @@ class CompassWidget(QtGui.QWidget):
 
 
     def newData(self):
-        print(1)
         x = self.magnetometer['x'].latest()
         y = self.magnetometer['y'].latest()
         z = self.magnetometer['z'].latest()

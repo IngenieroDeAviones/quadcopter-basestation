@@ -46,7 +46,7 @@ if __name__ == '__main__':
     sensorList = [sensor.Gyroscope(),
                   sensor.Accelerometer(),
                   sensor.Magnetometer(),
-                  sensor.Barrometer()]
+                  sensor.Barometer()]
 
     app = QtGui.QApplication(sys.argv)
     thread = parser.ParserThread('/dev/arduino')

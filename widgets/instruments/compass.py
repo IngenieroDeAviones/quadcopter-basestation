@@ -6,10 +6,13 @@ from PyQt4 import QtGui,  QtCore
 
 
 class CompassWidget(QtGui.QWidget):
+    heading = 0
     
-    def __init__(self,  heading=0):
+    def __init__(self,  magnetometer):
         super(CompassWidget, self).__init__()
-        self.heading=heading
+        self.magnetometer = magnetometer
+        if magnetometer:
+            self.magnetometer.dataAdded.connect(self.newData)
         
         #Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
@@ -105,23 +108,28 @@ class CompassWidget(QtGui.QWidget):
         qp.restore()
 
 
+    def newData(self):
+        print(1)
+        x = self.magnetometer['x'].latest()
+        y = self.magnetometer['y'].latest()
+        z = self.magnetometer['z'].latest()
+        self.setHeading(math.degrees(math.atan2(y, x)))
+
+
+
 def main():
     import os
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
     import parser
     from sensors import sensor, magnetometer
 
-    def heading(data):
-        x, y, z = data
-        return math.degrees(math.atan2(y,x))
-
     app = QtGui.QApplication(sys.argv)
-    compass = CompassWidget()
     thread = parser.ParserThread(open('/dev/arduino'))
     magnetometer = magnetometer.Magnetometer()
     sensorParser = parser.SensorDataParser(thread, [magnetometer])
-    magnetometer.dataAdded.connect(lambda t,d: compass.setHeading(heading(d)))
     thread.start()
+    compass = CompassWidget(magnetometer)
+    compass.show()
     sys.exit(app.exec_())
 
 

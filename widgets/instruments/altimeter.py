@@ -6,10 +6,13 @@ from PyQt4 import QtGui,  QtCore
 
 
 class AltimeterWidget(QtGui.QWidget):
+    altitude = 0
     
-    def __init__(self,  altitude=0):
+    def __init__(self,  barometer):
         super(AltimeterWidget, self).__init__()
-        self.altitude=altitude
+        self.barometer = barometer
+        if barometer:
+            self.barometer.dataAdded.connect(self.newData)
         
         #Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
@@ -113,20 +116,25 @@ class AltimeterWidget(QtGui.QWidget):
             qp.rotate(7.2)
             
         qp.restore()
+
+
+    def newData(self):
+        h = self.barometer['height'].latest()
+        self.setAltitude(h)
+
         
 def main():
     import os
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
     import parser
-    import sensor
+    from sensors import barometer
 
     app = QtGui.QApplication(sys.argv)
-    altimeter = AltimeterWidget(2.50)
     thread = parser.ParserThread(open('/dev/arduino'))
-    barometer = sensor.Barometer()
+    barometer = barometer.Barometer()
     sensorParser = parser.SensorDataParser(thread, [barometer])
-    barometer.dataAdded.connect(lambda d: altimeter.setAltitude(d[1]))
     thread.start()
+    altimeter = AltimeterWidget(barometer)
     sys.exit(app.exec_())
 
 

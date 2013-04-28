@@ -10,6 +10,7 @@ from PyQt4 import QtCore, QtGui
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
 import parser
 import magnetometer
+import accelerometer
 
 
 n = 200
@@ -42,9 +43,10 @@ def ellipsoid_axis_length( a ):
     return [res1, res2, res3]
 
 def calibrate(sensor):
-    x = np.array(compass['rawx'].data[1])
-    y = np.array(compass['rawy'].data[1])
-    z = np.array(compass['rawz'].data[1])
+    print(sensor)
+    x = np.array(sensor['rawx'].data[1])
+    y = np.array(sensor['rawy'].data[1])
+    z = np.array(sensor['rawz'].data[1])
 
     a = fitEllipsoid(x,y,z)
     center = ellipsoid_center(a)
@@ -63,24 +65,28 @@ def calibrate(sensor):
 
     sensor.saveCalibration()
 
-    sys.exit()
-
 
 def newData(t, d):
-    if len(compass['rawx']) >= n:
+    if len(compass['rawx']) >= n and len(accelerometer['rawx']) >= n:
         compass.dataAdded.disconnect()
+        accelerometer.dataAdded.disconnect()
         print('Done collecting data, finding best fit ellipsoid.')
         calibrate(compass)
+        calibrate(accelerometer)
+
+        sys.exit()
 
 
 app = QtGui.QApplication(sys.argv)
 
 compass = magnetometer.Magnetometer(bufferLength=n)
 compass.dataAdded.connect(newData)
+accelerometer = accelerometer.Accelerometer(bufferLength=n)
+accelerometer.dataAdded.connect(newData)
 
 thread = parser.ParserThread('/dev/arduino')
 thread.daemon = False
 thread.start()
-sensorParser = parser.SensorDataParser(thread, [compass])
+sensorParser = parser.SensorDataParser(thread, [compass, accelerometer])
 
 sys.exit(app.exec_())

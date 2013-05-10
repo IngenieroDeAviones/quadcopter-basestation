@@ -27,11 +27,9 @@ class Estimator(QtCore.QObject):
         mx, my, mz = [self.magnetometer[c].latest() for c in ('x','y','z')]
         ax, ay, az = [self.accelerometer[c].latest() for c in ('x','y','z')]
 
-        self.pitch = math.atan2(-ay,az)
-        self.roll = math.atan2(ax, math.sqrt(ay*ay + az*az))
-        self.heading = math.atan2(mx * math.sin(self.pitch) * math.sin(self.roll) + my * math.cos(self.roll) + mz * math.cos(self.pitch) * math.sin(self.roll),
-                                mx * math.cos(self.pitch) - mz * math.sin(self.pitch))
-
-        print(self.roll, self.pitch, self.heading)
+        self.roll = math.atan2(-ay,az)
+        self.pitch = math.atan2(ax, math.sqrt(ay*ay + az*az))
+        self.heading = math.atan2(mx * math.sin(self.roll) * math.sin(self.pitch) + my * math.cos(self.pitch) + mz * math.cos(self.roll) * math.sin(self.pitch),
+                                mx * math.cos(self.roll) - mz * math.sin(self.roll))
 
         self.newRotation.emit(self.roll, self.pitch, self.heading)

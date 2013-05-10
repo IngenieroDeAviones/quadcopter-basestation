@@ -9,14 +9,14 @@ class HorizonWidget(QtGui.QWidget):
     roll = 0
     pitch = 0
     
-    def __init__(self, accelerometer=None):
+    def __init__(self, estimator=None):
         super(HorizonWidget, self).__init__()
 
-        self.accelerometer = accelerometer
-        if accelerometer:
-            self.accelerometer.dataAdded.connect(self.newData)
+        self.estimator = estimator
+        if estimator:
+            self.estimator.newRotation.connect(self.updateRotation)
 
-        #Define Pens and fonts
+        # Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
         self.mediumPen=QtGui.QPen(QtCore.Qt.white,  4,  cap=QtCore.Qt.FlatCap)
         self.thinPen=QtGui.QPen(QtCore.Qt.white,  2,  cap=QtCore.Qt.FlatCap)
@@ -30,7 +30,6 @@ class HorizonWidget(QtGui.QWidget):
         
         # Setup the user interface
         self.setWindowTitle('Horizon')
-        self.show()
     
     def setPitch(self, pitch):
         self.pitch=pitch
@@ -131,26 +130,18 @@ class HorizonWidget(QtGui.QWidget):
         qp.drawLine(30, 0, 100, 0)
 
 
-    def newData(self):
-        x = self.accelerometer['x'].latest()
-        y = self.accelerometer['y'].latest()
-        z = self.accelerometer['z'].latest()
-    
-        self.setRoll(math.degrees(math.atan2(-y,z)))
-        self.setPitch(math.degrees(math.atan2(x, math.sqrt(y*y + z*z))))
+    def updateRotation(self, roll, pitch, heading):
+        self.setRoll(math.degrees(roll))
+        self.setPitch(math.degrees(pitch))
     
 def main():
     import os
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
-    import parser
-    from sensors import sensor, accelerometer
+    from processing import estimator
     
     app = QtGui.QApplication(sys.argv)
-    thread = parser.ParserThread(open('/dev/arduino'))
-    accelerometer = accelerometer.Accelerometer()
-    sensorParser = parser.SensorDataParser(thread, [accelerometer])
-    thread.start()
-    horizon = HorizonWidget(accelerometer)
+    horizon = HorizonWidget(estimator.Estimator())
+    horizon.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

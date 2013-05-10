@@ -3,6 +3,11 @@
 import sys
 import math
 from PyQt4 import QtGui, QtCore
+
+import os
+sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
+import parser
+from processing import estimator
 from instruments import compass, altimeter, horizon
 
 class MainPanel(QtGui.QMainWindow):
@@ -11,11 +16,8 @@ class MainPanel(QtGui.QMainWindow):
         super(MainPanel, self).__init__()
 
         self.resize(1080, 380)
-
         self.centralWidget = CentralWidget(self)
-
         self.menuBar = MenuBar(self)
-        
         self.setWindowTitle('Main panel')
 
 class MenuBar(QtGui.QMenuBar):
@@ -68,11 +70,13 @@ class CentralWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(CentralWidget, self).__init__(parent)
 
+        self.estimator = estimator.Estimator()
+
         self.layout = QtGui.QGridLayout(self)
 
-        self.compass = compass.CompassWidget()
+        self.compass = compass.CompassWidget(self.estimator)
         self.altimeter = altimeter.AltimeterWidget()
-        self.horizon = horizon.HorizonWidget()
+        self.horizon = horizon.HorizonWidget(self.estimator)
 
         # Add widgets to centralWidget        
         self.layout.addWidget(self.compass, 0, 0, 3, 3)

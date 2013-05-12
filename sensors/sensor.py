@@ -1,59 +1,33 @@
 
-from collections import deque, OrderedDict
 import datetime
 import configparser
 
 from PyQt4 import QtCore
 
-
-class Channel:
-    def __init__(self, sensor, name, unit=None, bufferLength=200):
-        self.sensor = sensor
-        self.name = name
-        self.data = [deque(maxlen=bufferLength), deque(maxlen=bufferLength)]
-        self.units = unit
+import stream
 
 
-    def latest(self):
-        try:
-            return self.data[1][-1]
-        except IndexError:
-            return 0.0
-
-
-    def __len__(self):
-        return len(self.data[0])
-
-
-    def __iadd__(self, t):
-        self.data[0].append(t[0])
-        self.data[1].append(t[1])
-        return self
-
-
-
-class Sensor(QtCore.QObject):
-    dataAdded = QtCore.pyqtSignal(datetime.datetime, list)
+class Sensor(stream.Stream):
     calibration = {}
 
-    def __init__(self, channelNames, units=None, bufferLength=200, name=None):
-        super().__init__()
+    def __init__(self, sensorDataParser, channelNames, bufferLength=200, name=None):
+        super().__init__(channelNames)
+        self.raw = stream.Stream(channelNames)
         self.name = name or self.__class__.__name__
-        if type(units) == str or units is None:
-            units = [units] * len(channelNames)
-
-        self.channels = OrderedDict([ (channelName, Channel(self, channelName, unit, bufferLength)) for channelName, unit in zip(channelNames, units)])
         self.loadCalibration()
 
+        sensorDataParser.addStream(self.char, self.raw)
+        self.raw.updated.connect(self.newData)
 
-    def appendData(self, data, timestamp=None):
-        data = list(map(float, data))
-        if timestamp is None:
-            timestamp = datetime.datetime.now()
-        for channel, d in zip(self.channels.values(), data):
-            channel += [timestamp, d]
-        self.dataAdded.emit(timestamp, data)
-        return timestamp
+
+    def newData(self, stream):
+        """Called when new data is available.
+        
+        Overload this function to implement calibration. You do not have
+        to use super in that case.
+
+        """
+        self.update(stream._channels)
 
 
     def calibrate(self):
@@ -64,7 +38,7 @@ class Sensor(QtCore.QObject):
         f = configparser.RawConfigParser()
         f.read(calibrationFile)
         try:
-            self.calibration = { key: float(value) for (key, value) in f[self.name].items()}
+            self.calibration = { key: float(value) for (key, value) in f[self.name].items() }
         except:
             pass
 
@@ -76,15 +50,33 @@ class Sensor(QtCore.QObject):
         f.write(open(calibrationFile,'w'))
 
 
-    def __getitem__(self, key):
-        return self.channels[key]
-
-
-    def __iter__(self):
-        return iter(self.channels.values())
-
-
 class Sensor3D(Sensor):
-    def __init__(self, channelNames =['x', 'y', 'z'], units=None, bufferLength=200, name=None):
-        super().__init__(channelNames = channelNames, units = units, bufferLength = bufferLength, name = name)
+    calibration = {'cx': 0, 'cy': 0, 'cz': 0, 'a': 1, 'b': 1, 'c': 1}
+    def __init__(self, bufferLength=200, name = None):
+        super().__init__(channelNames = ['x', 'y', 'z'], bufferLength = bufferLength, name = name)
 
+
+    def newData(self, stream):
+        x = (float(stream['x']) - self.calibration['cx']) / self.calibration['a']]
+        y = (float(stream['y']) - self.calibration['cy']) / self.calibration['b']]
+        z = (float(stream['z']) - self.calibration['cz']) / self.calibration['c']]
+        self.update([x,y,z])
+
+
+#######################################
+# Individual sensors:
+
+class Accelerometer(Sensor3D):
+    char = 'A'
+
+
+class Magnetometer(Sensor3D):
+    char = 'M'
+
+
+class Gyroscope(Sensor3D):
+    char = 'G'
+
+
+class Barometer(sensor.Sensor):
+    char = 'B'

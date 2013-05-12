@@ -51,17 +51,17 @@ class ParserThread(QtCore.QThread):
 
 
 class SensorDataParser(QtCore.QObject):
-    def __init__(self, parserThread, sensors):
+    streams = {}
+
+    def __init__(self, parserThread):
         super().__init__()
         parserThread.sensorData.connect(self.parseData)
-        if type(sensors) == dict:
-            self.sensors = sensors
-        else:
-            self.sensors = { s.char: s for s in sensors }
-        for sensor in self.sensors.values():
-            sensor.parser = self
 
 
     def parseData(self, sensor, data):
-        if sensor[0] in self.sensors:
-            self.sensors[sensor[0]].appendData(data)
+        if sensor[0] in self.streams:
+            self.streams[sensor[0]].update(map(float, data))
+
+
+    def addStream(self, char, stream)
+        self.stream['char'] = stream

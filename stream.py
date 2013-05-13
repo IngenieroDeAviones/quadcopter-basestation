@@ -12,19 +12,19 @@ class Stream(QtCore.QObject):
     
     """
     updated = QtCore.pyqtSignal(QtCore.QObject)
-    _channels = OrderedDict
     timestamp = datetime.datetime.now()
 
 
-    def __init__(self, parent=None, channels=None):
+    def __init__(self, channels=None, parent=None):
         super().__init__(parent)
-        self._channels.update({channel: None for channel in channels})
+        self._channels = OrderedDict()
+        self._channels.update(zip(channels, (None, ) * len(channels)))
 
 
     def update(self, values):
         """Update one or more channel values."""
         if not isinstance(values, dict):
-            value = {channel: value for channel, value in zip (self._channels, values)}
+            values = {channel: value for channel, value in zip(self._channels, values)}
         self._channels.update(values)
         self.timestamp = datetime.datetime.now()
         self.updated.emit(self)

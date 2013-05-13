@@ -12,7 +12,7 @@ class CompassWidget(QtGui.QWidget):
         super(CompassWidget, self).__init__()
         self.estimator = estimator
         if estimator:
-            self.estimator.newRotation.connect(lambda roll,pitch,heading: self.setHeading(math.degrees(heading)))
+            self.estimator.rotation.updated.connect(lambda stream: self.setHeading(math.degrees(stream['heading'])))
         
         #Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)

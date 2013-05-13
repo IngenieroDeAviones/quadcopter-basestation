@@ -63,5 +63,5 @@ class SensorDataParser(QtCore.QObject):
             self.streams[sensor[0]].update(map(float, data))
 
 
-    def addStream(self, char, stream)
-        self.stream['char'] = stream
+    def addStream(self, char, stream):
+        self.streams[char] = stream

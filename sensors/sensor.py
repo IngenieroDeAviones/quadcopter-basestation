@@ -10,7 +10,7 @@ import stream
 class Sensor(stream.Stream):
     calibration = {}
 
-    def __init__(self, sensorDataParser, channelNames, bufferLength=200, name=None):
+    def __init__(self, sensorDataParser, channelNames, name=None):
         super().__init__(channelNames)
         self.raw = stream.Stream(channelNames)
         self.name = name or self.__class__.__name__
@@ -52,14 +52,14 @@ class Sensor(stream.Stream):
 
 class Sensor3D(Sensor):
     calibration = {'cx': 0, 'cy': 0, 'cz': 0, 'a': 1, 'b': 1, 'c': 1}
-    def __init__(self, bufferLength=200, name = None):
-        super().__init__(channelNames = ['x', 'y', 'z'], bufferLength = bufferLength, name = name)
+    def __init__(self, sensorDataParser, name = None):
+        super().__init__(sensorDataParser, channelNames = ['x', 'y', 'z'], name = name)
 
 
     def newData(self, stream):
-        x = (float(stream['x']) - self.calibration['cx']) / self.calibration['a']]
-        y = (float(stream['y']) - self.calibration['cy']) / self.calibration['b']]
-        z = (float(stream['z']) - self.calibration['cz']) / self.calibration['c']]
+        x = (float(stream['x']) - self.calibration['cx']) / self.calibration['a']
+        y = (float(stream['y']) - self.calibration['cy']) / self.calibration['b']
+        z = (float(stream['z']) - self.calibration['cz']) / self.calibration['c']
         self.update([x,y,z])
 
 
@@ -78,5 +78,5 @@ class Gyroscope(Sensor3D):
     char = 'G'
 
 
-class Barometer(sensor.Sensor):
+class Barometer(Sensor):
     char = 'B'

@@ -6,10 +6,9 @@ from PyQt4 import QtGui,  QtCore
 
 
 class AltimeterWidget(QtGui.QWidget):
-    altitude = 0
-    
     def __init__(self,  barometer=None):
         super(AltimeterWidget, self).__init__()
+        self.altitude = 0
         self.barometer = barometer
         if barometer:
             self.barometer.dataAdded.connect(self.newData)

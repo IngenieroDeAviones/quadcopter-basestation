@@ -7,53 +7,53 @@ import os
 import sys
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
 import recorder
+from processing import estimator
+import stream
 
 
 class SensorTreeWidget(QtGui.QTreeWidget):
-    def __init__(self, sensors, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.setColumnCount(1)
         self.header().close()
         self.setSelectionMode(self.ExtendedSelection)
 
-        for sensor in sensors:
-            item = QtGui.QTreeWidgetItem(self, [sensor.name])
-            item.sensor = sensor
-            for name, channel in sensor.channels.items():
-                widget = QtGui.QTreeWidgetItem(item, [name])
-                widget.channel = channel
-            item.setExpanded(True)
+        streams = stream.Stream.getInstances()
+        for s in streams:
+            item = QtGui.QTreeWidgetItem(self, [s.name])
+            item.sensor = s
+            for channel in s:
+                widget = QtGui.QTreeWidgetItem(item, [channel])
+            item.setExpanded(s.name[-4:] != '_raw')
             self.addTopLevelItem(item)
 
 
 
 class SensorGraph(plotwidget.PlotWidget):
-    def __init__(self, parser, sensors, parent=None):
+    def __init__(self, parser, parent=None):
         super().__init__(parent)
-        self.parser = parser
-        self.sensors = sensors
-        self.graphs = {}
-        for i, sensor in enumerate(self.sensors):
-            sensor.dataAdded.connect(self.replot)
-            for channel in sensor.channels.values():
-                data = channel.data
-                graph = self.newGraph(data[0], data[1])
-                graph.setVisible(False)
-                self.graphs[channel] = graph
+#        self.graphs = {}
+#        for i, sensor in enumerate(self.sensors):
+#            sensor.dataAdded.connect(self.replot)
+#            for channel in sensor.channels.values():
+#                data = channel.data
+#                graph = self.newGraph(data[0], data[1])
+#                graph.setVisible(False)
+#                self.graphs[channel] = graph
 #        self.parser.nextIteration.connect(self.replot)
 
 
 class SensorGraphWidget(QtGui.QWidget):
-    def __init__(self, parser, sensors, parent=None):
+    def __init__(self, estimator, parent=None):
         super().__init__(parent)
 
         self.parser = parser
-        self.sensorTree = SensorTreeWidget(sensors)
+        self.sensorTree = SensorTreeWidget()
         self.sensorTree.setMaximumWidth(200)
         self.sensorTree.selectionModel().selectionChanged.connect(self.selectionChanged)
         self.recordButton = QtGui.QPushButton('record')
         self.recordButton.clicked.connect(self.record)
-        self.graph = SensorGraph(parser, sensors)
+        self.graph = SensorGraph(estimator.thread)
 
         leftLayout = QtGui.QVBoxLayout()
         leftLayout.addWidget(self.sensorTree)
@@ -91,18 +91,11 @@ class SensorGraphWidget(QtGui.QWidget):
 
 if __name__ == '__main__':
     import parser
-    from sensors import gyroscope, accelerometer, magnetometer, barometer
+    from processing import estimator
 
-    sensorList = [gyroscope.Gyroscope(),
-                  accelerometer.Accelerometer(),
-                  magnetometer.Magnetometer(),
-                  barometer.Barometer()]
+    est= estimator.Estimator()
 
     app = QtGui.QApplication(sys.argv)
-    thread = parser.ParserThread('/dev/arduino')
-    thread.daemon = True
-    thread.start()
-    sensorParser = parser.SensorDataParser(thread, sensorList)
-    widget = SensorGraphWidget(thread, sensorParser.sensors.values())
+    widget = SensorGraphWidget(est)
     widget.show()
     sys.exit(app.exec_())

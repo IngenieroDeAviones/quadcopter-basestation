@@ -11,9 +11,9 @@ class Sensor(stream.Stream):
     calibration = {}
 
     def __init__(self, sensorDataParser, channelNames, name=None):
-        super().__init__(channelNames)
-        self.raw = stream.Stream(channelNames)
-        self.name = name or self.__class__.__name__
+        name = str(name) if not name is None else self.__class__.__name__
+        stream.Stream.__init__(self, channelNames, name = 'sensor.' + name)
+        self.raw = stream.Stream(channelNames, self.name + '_raw')
         self.loadCalibration()
 
         sensorDataParser.addStream(self.char, self.raw)

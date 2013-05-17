@@ -8,10 +8,11 @@ import parser
 import stream
 
 class Estimator:
-    rotation = stream.Stream(('pitch', 'roll', 'heading'))
 
     def __init__(self):
         super().__init__()
+        self.rotation = stream.Stream(('pitch', 'roll', 'heading'), 'estimator.rotation')
+
         self.thread = parser.ParserThread(open('/dev/arduino'))
         self.sensorParser = parser.SensorDataParser(self.thread)
         self.thread.start()
@@ -19,7 +20,7 @@ class Estimator:
         self.accelerometer = sensor.Accelerometer(self.sensorParser)
         self.accelerometer.updated.connect(self.updateRotation)
         self.magnetometer = sensor.Magnetometer(self.sensorParser)
-#        self.magnetometer.updated.connect(self.updateRotation)
+        self.magnetometer.updated.connect(self.updateRotation)
 
 
     def updateRotation(self, stream):

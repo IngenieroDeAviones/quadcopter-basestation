@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import datetime
+import weakref
 from PyQt4 import QtCore
 
 class Stream(QtCore.QObject):
@@ -12,12 +13,15 @@ class Stream(QtCore.QObject):
     
     """
     updated = QtCore.pyqtSignal(QtCore.QObject)
-    timestamp = datetime.datetime.now()
+    __refs__ = []
 
 
-    def __init__(self, channels=None, parent=None):
+    def __init__(self, channels=None, name=None, parent=None):
         super().__init__(parent)
+        self.__refs__.append(weakref.ref(self))
         self._channels = OrderedDict()
+        self.timestamp = datetime.datetime.now()
+        self.name = str(name) if not name is None else self.__class__.__name__
         self._channels.update(zip(channels, (None, ) * len(channels)))
 
 
@@ -47,3 +51,11 @@ class Stream(QtCore.QObject):
 
     def __iter__(self):
         return iter(self._channels)
+
+
+    @classmethod
+    def getInstances(cls):
+        for ref in cls.__refs__:
+            instance = ref()
+            if instance is not None:
+                 yield instance

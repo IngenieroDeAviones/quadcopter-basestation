@@ -14,7 +14,7 @@ class HorizonWidget(QtGui.QWidget):
 
         self.estimator = estimator
         if estimator:
-            self.estimator.newRotation.connect(self.updateRotation)
+            self.estimator.rotation.updated.connect(self.updateRotation)
 
         # Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
@@ -130,9 +130,9 @@ class HorizonWidget(QtGui.QWidget):
         qp.drawLine(30, 0, 100, 0)
 
 
-    def updateRotation(self, roll, pitch, heading):
-        self.setRoll(math.degrees(roll))
-        self.setPitch(math.degrees(pitch))
+    def updateRotation(self, stream):
+        self.setRoll(math.degrees(stream['roll']))
+        self.setPitch(math.degrees(stream['pitch']))
     
 def main():
     import os

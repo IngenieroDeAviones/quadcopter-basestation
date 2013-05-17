@@ -8,7 +8,7 @@ import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
 import parser
 from processing import estimator
-from instruments import compass, altimeter, horizon
+from widgets.instruments import compass, altimeter, horizon
 
 class MainPanel(QtGui.QMainWindow):
    
@@ -80,7 +80,7 @@ class CentralWidget(QtGui.QWidget):
 
         # Add widgets to centralWidget        
         self.layout.addWidget(self.compass, 0, 0, 3, 3)
-        self.layout.addWidget(self.altimeter, 2, 3, 3, 3)
+        self.layout.addWidget(self.altimeter, 0, 3, 3, 3)
         self.layout.addWidget(self.horizon, 0, 6, 3, 3)
 
         # Add centralWidget to mainPanel

@@ -4,12 +4,12 @@ import sys
 import math
 from PyQt4 import QtGui, QtCore
 
-class TemperatureWidget(QtGui.QWidget):
-    def __init__(self, sensor=None, maxTemp=100):
-        super(TemperatureWidget, self).__init__()
-        self.temperature = 110
+class CurrentWidget(QtGui.QWidget):
+    def __init__(self, sensor=None, maxCurrent=40):
+        super(CurrentWidget, self).__init__()
+        self.current = 0
         self.sensor = sensor
-        self.maxTemp = maxTemp
+        self.maxCurrent = maxCurrent
 
         #Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
@@ -36,12 +36,12 @@ class TemperatureWidget(QtGui.QWidget):
         self.setWindowTitle('Temperature')
         self.show()
 
-    def setTemperature(self, temperature):
-        self.temperature = temperature
+    def setCurrent(self, current):
+        self.current = current
         self.update()
 
     def paintEvent(self, e):
-        """ Draw the temperature sensor """
+        """ Draw the current sensor """
         qp = QtGui.QPainter()
         qp.begin(self)
         qp.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -69,43 +69,9 @@ class TemperatureWidget(QtGui.QWidget):
         qp.setBrush(QtGui.QColor(255, 255, 255))
 
         qp.translate(0,-130)
-        string = "°C"
+        string = "A"
         rect = qp.fontMetrics().tightBoundingRect(string)
         qp.drawText(-rect.width()/2, rect.height()/2, string)
-        qp.restore()
-
-        """ Draw the temperature symbol """
-
-        qp.save()
-        qp.setPen(QtGui.QColor(255, 255, 255))
-        qp.setBrush(QtGui.QColor(255, 255, 255))
-        if self.temperature >= self.maxTemp:
-            color = QtCore.Qt.red
-        elif self.temperature >= self.maxTemp - 10:
-            color = QtCore.Qt.yellow
-        else:
-            color = QtCore.Qt.white
-
-        qp.setPen(QtGui.QPen(color, 5, cap=QtCore.Qt.RoundCap))
-
-        qp.translate(0,50)
-
-        qp.drawEllipse(-3, -3, 6, 6)
-
-        qp.drawLine(0, 0, 0, -40)
-
-        qp.setPen(QtGui.QPen(color, 4, cap=QtCore.Qt.RoundCap))
-
-        qp.translate(0,-15)
-        qp.drawLine(0, 0, 12, 0)
-
-        qp.translate(0,-8)
-        qp.drawLine(0, 0, 12, 0)
-
-        qp.translate(0,-8)
-        qp.drawLine(0, 0, 12, 0)
-
-
         qp.restore()
 
         """ Draw the arrow """
@@ -114,7 +80,7 @@ class TemperatureWidget(QtGui.QWidget):
 
         qp.save()
         qp.translate(0,100)
-        qp.rotate(-100+100/80*min(max(self.temperature, 30), 130))
+        qp.rotate(-60+2*min(self.current, 60))
         qp.drawPolygon(self.arrow1Poly)
         qp.restore()
         
@@ -132,29 +98,29 @@ class TemperatureWidget(QtGui.QWidget):
         qp.setPen(self.redPen)
 
         rectangle = QtCore.QRect(-172, -172, 344, 344)
-        startAngleRed = 40 * 16
-        spanAngleRed = (120 - self.maxTemp) * 1.25 * 16
+        startAngleRed = 30 * 16
+        spanAngleRed = (60 - self.maxCurrent) * 2 * 16
 
         qp.drawArc(rectangle, startAngleRed, spanAngleRed)
 
         qp.setPen(self.yellowPen)
         startAngleYellow = startAngleRed + spanAngleRed
-        spanAngleYellow = 12.5 * 16
+        spanAngleYellow = 20 * 16
 
         qp.drawArc(rectangle, startAngleYellow, spanAngleYellow)
 
-        qp.rotate(-50)
+        qp.rotate(-60)
 
-        for temperature in range(40, 121, 10):
-            if temperature % 20 == 0:
+        for current in range(0, 61, 5):
+            if current % 10 == 0:
                 qp.setPen(self.thickPen)
                 qp.drawLine(0, -190, 0, -170)
-                angle = -100 + 100/80*temperature
+                angle = -60 + 2*current
                 qp.save()
                 qp.translate(0, -150)
                 qp.rotate(-angle)
     
-                number = str(temperature)
+                number = str(current)
                 rect=qp.fontMetrics().tightBoundingRect(number)
                 qp.drawText(-rect.width()/2, rect.height()/2, number)
                 qp.restore()
@@ -162,15 +128,15 @@ class TemperatureWidget(QtGui.QWidget):
                 qp.setPen(self.mediumPen)
                 qp.drawLine(0, -180, 0, -170)
 
-            qp.rotate(12.5)
+            qp.rotate(10)
 
         qp.restore()
 
 def main():
 
     app=QtGui.QApplication(sys.argv)
-    thermometer = TemperatureWidget()
-    thermometer.show()
+    current = CurrentWidget()
+    current.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

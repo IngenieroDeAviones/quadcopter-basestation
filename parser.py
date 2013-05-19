@@ -50,6 +50,10 @@ class ParserThread(QtCore.QThread):
                 print(e)
 
 
+    def __del__(self):
+        self.stream.close()
+
+
 class SensorDataParser(QtCore.QObject):
     streams = {}
 

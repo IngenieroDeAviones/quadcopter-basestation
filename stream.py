@@ -53,6 +53,10 @@ class Stream(QtCore.QObject):
         return iter(self._channels)
 
 
+    def __len__(self):
+        return len(self._channels)
+
+
     @classmethod
     def getInstances(cls):
         for ref in cls.__refs__:

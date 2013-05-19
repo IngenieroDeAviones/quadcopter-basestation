@@ -6,12 +6,15 @@ from PyQt4 import QtCore
 from sensors import sensor
 import parser
 import stream
+from processing import filters
+
 
 class Estimator:
 
     def __init__(self):
         super().__init__()
-        self.rotation = stream.Stream(('pitch', 'roll', 'heading'), 'estimator.rotation')
+        self.rotation_raw = stream.Stream(('pitch', 'roll', 'heading'), name='estimator.rotation_raw')
+        self.rotation = filters.LowPass(self.rotation_raw, tau=5 ,name='estimator.rotation')
 
         self.thread = parser.ParserThread(open('/dev/arduino'))
         self.sensorParser = parser.SensorDataParser(self.thread)
@@ -32,4 +35,4 @@ class Estimator:
         heading = math.atan2(mx * math.sin(pitch) * math.sin(roll) + my * math.cos(roll) + mz * math.cos(pitch) * math.sin(roll),
                                   mx * math.cos(pitch) - mz * math.sin(pitch))
 
-        self.rotation.update((roll, pitch, heading))
+        self.rotation_raw.update((pitch, roll, heading))

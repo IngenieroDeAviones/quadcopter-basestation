@@ -19,6 +19,8 @@ class Graph:
             return
         self.visible = visible
         if visible:
+            self.plot.set_xdata(range(len(self.y)))
+            self.plot.set_ydata(self.y)
             self.axis.add_line(self.plot)
         else:
             self.plot.remove()

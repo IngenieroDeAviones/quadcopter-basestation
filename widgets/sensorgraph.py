@@ -1,4 +1,5 @@
 
+from collections import deque
 from PyQt4 import QtCore, QtGui
 
 import plotwidget
@@ -9,6 +10,18 @@ sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pard
 import recorder
 from processing import estimator
 import stream
+
+class streamGraph(plotwidget.Graph):
+    def __init__(self, axis, stream, channel):
+        self.data = [deque(maxlen=200), deque(maxlen=200)]
+        super().__init__(axis, self.data[0], self.data[1])
+        self.channel = channel
+        stream.updated.connect(self.update)
+    
+
+    def update(self, stream):
+        self.data[0].append(stream.timestamp)
+        self.data[1].append(stream[self.channel])
 
 
 class SensorTreeWidget(QtGui.QTreeWidget):
@@ -24,7 +37,9 @@ class SensorTreeWidget(QtGui.QTreeWidget):
             item.sensor = s
             for channel in s:
                 widget = QtGui.QTreeWidgetItem(item, [channel])
-            item.setExpanded(s.name[-4:] != '_raw')
+                widget.stream = s
+                widget.channel = channel
+            item.setExpanded(not s.name.endswith('_raw'))
             self.addTopLevelItem(item)
 
 
@@ -32,15 +47,14 @@ class SensorTreeWidget(QtGui.QTreeWidget):
 class SensorGraph(plotwidget.PlotWidget):
     def __init__(self, parser, parent=None):
         super().__init__(parent)
-#        self.graphs = {}
-#        for i, sensor in enumerate(self.sensors):
-#            sensor.dataAdded.connect(self.replot)
-#            for channel in sensor.channels.values():
-#                data = channel.data
-#                graph = self.newGraph(data[0], data[1])
-#                graph.setVisible(False)
-#                self.graphs[channel] = graph
-#        self.parser.nextIteration.connect(self.replot)
+        self.graphs = {}
+        streams = stream.Stream.getInstances()
+        for i, s in enumerate(streams):
+            for channel in s:
+                graph = streamGraph(self.figure.axes[0], s, channel)
+                graph.setVisible(False)
+                self.graphs[s.name + '.' + channel] = graph
+        parser.nextIteration.connect(self.replot)
 
 
 class SensorGraphWidget(QtGui.QWidget):
@@ -69,7 +83,7 @@ class SensorGraphWidget(QtGui.QWidget):
         graphs = []
         for widget in self.sensorTree.selectedItems():
             try:
-                graphs.append(self.graph.graphs[widget.channel])
+                graphs.append(self.graph.graphs[widget.stream.name + '.' + widget.channel])
             except:
                 pass
 

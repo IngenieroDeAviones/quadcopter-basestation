@@ -38,7 +38,8 @@ class Sensor(stream.Stream):
         f = configparser.RawConfigParser()
         f.read(calibrationFile)
         try:
-            self.calibration = { key: float(value) for (key, value) in f[self.name].items() }
+            name = self.name.split('.', maxsplit=-1)[1]
+            self.calibration = { key: float(value) for (key, value) in f[name].items() }
         except:
             pass
 

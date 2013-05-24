@@ -53,8 +53,8 @@ class Sensor(stream.Stream):
 
 class Sensor3D(Sensor):
     calibration = {'cx': 0, 'cy': 0, 'cz': 0, 'a': 1, 'b': 1, 'c': 1}
-    def __init__(self, sensorDataParser, name = None):
-        super().__init__(sensorDataParser, channelNames = ['x', 'y', 'z'], name = name)
+    def __init__(self, sensorDataParser, name=None, channelNames=None):
+        super().__init__(sensorDataParser, channelNames = channelNames or ['x', 'y', 'z'], name = name)
 
 
     def newData(self, stream):

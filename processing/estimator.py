@@ -14,7 +14,6 @@ class Estimator:
     def __init__(self):
         super().__init__()
         self.rotation_raw = stream.Stream(('pitch', 'roll', 'heading'), name='estimator.rotation_raw')
-        self.rotation = filters.LowPass(self.rotation_raw, tau=5 ,name='estimator.rotation')
 
         self.thread = parser.ParserThread(open('/dev/arduino'))
         self.sensorParser = parser.SensorDataParser(self.thread)
@@ -24,6 +23,9 @@ class Estimator:
         self.accelerometer.updated.connect(self.updateRotation)
         self.magnetometer = sensor.Magnetometer(self.sensorParser)
         self.magnetometer.updated.connect(self.updateRotation)
+        self.gyroscope = sensor.Gyroscope(self.sensorParser)
+
+        self.rotation = filters.Complementary(self.rotation_raw, self.gyroscope, tau=50, name='estimator.rotation')
 
 
     def updateRotation(self, stream):

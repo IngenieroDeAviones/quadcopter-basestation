@@ -30,7 +30,9 @@ class Stream(QtCore.QObject):
         if not isinstance(values, dict):
             values = {channel: value for channel, value in zip(self._channels, values)}
         self._channels.update(values)
-        self.timestamp = datetime.datetime.now()
+        now = datetime.datetime.now()
+        self.dt = now - self.timestamp
+        self.timestamp = now
         self.updated.emit(self)
 
 

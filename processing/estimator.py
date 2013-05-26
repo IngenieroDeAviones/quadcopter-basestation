@@ -25,7 +25,7 @@ class Estimator:
         self.magnetometer.updated.connect(self.updateRotation)
         self.gyroscope = sensor.Gyroscope(self.sensorParser)
 
-        self.rotation = filters.Complementary(self.rotation_raw, self.gyroscope, tau=50, name='estimator.rotation')
+        self.rotation = filters.Complementary(self.rotation_raw, self.gyroscope, tau=2, name='estimator.rotation')
 
 
     def updateRotation(self, stream):

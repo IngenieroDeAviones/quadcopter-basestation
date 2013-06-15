@@ -4,8 +4,12 @@ import sys
 import math
 from PyQt4 import QtGui,  QtCore
 
+import os
+sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
+from widgets.instruments import intrument
 
-class HorizonWidget(QtGui.QWidget):
+
+class HorizonWidget(instrument):
     roll = 0
     pitch = 0
     

@@ -4,9 +4,14 @@ import sys
 import math
 from PyQt4 import QtGui, QtCore
 
-class TemperatureWidget(QtGui.QWidget):
-    def __init__(self, sensor=None, maxTemp=100):
-        super(TemperatureWidget, self).__init__()
+import os
+sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
+from widgets.instruments import instrument
+
+
+class TemperatureWidget(instrument.Instrument):
+    def __init__(self, sensor=None, maxTemp=100, parent=None):
+        super().__init__(parent)
         self.temperature = 110
         self.sensor = sensor
         self.maxTemp = maxTemp

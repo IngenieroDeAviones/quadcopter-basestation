@@ -4,9 +4,13 @@ import sys
 import math
 from PyQt4 import QtGui, QtCore
 
-class CurrentWidget(QtGui.QWidget):
-    def __init__(self, sensor=None, maxCurrent=40):
-        super(CurrentWidget, self).__init__()
+import os
+sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
+from widgets.instruments import instrument
+
+class CurrentWidget(instrument.Instrument):
+    def __init__(self, sensor=None, maxCurrent=40, parent=None):
+        super().__init__(parent)
         self.current = 0
         self.sensor = sensor
         self.maxCurrent = maxCurrent

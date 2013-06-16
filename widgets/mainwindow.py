@@ -9,7 +9,7 @@ sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pard
 import parser
 from processing import estimator
 from widgets import floatlayout
-from widgets.instruments import compass, altimeter, horizon
+from widgets.instruments import compass, altimeter, horizon, current, temperature
 
 class MainPanel(QtGui.QMainWindow):
    
@@ -81,16 +81,35 @@ class CentralWidget(QtGui.QWidget):
 
         self.estimator = estimator.Estimator()
 
-        self.layout = floatlayout.FloatLayout([9, 5], parent=self)
+        self.layout = floatlayout.FloatLayout([9, 4], parent=self)
 
         self.instruments = {}
         self.instruments['compass'] = compass.CompassWidget(self.estimator, self)
         self.instruments['altimeter'] = altimeter.AltimeterWidget(None, self)
         self.instruments['horizon'] = horizon.HorizonWidget(self.estimator, self)
 
-        self.layout.addWidget(self.instruments['compass'])
-        self.layout.addWidget(self.instruments['altimeter'])
-        self.layout.addWidget(self.instruments['horizon'])
+        for i in range(1,5):
+            name = 'Current' + str(i)
+            self.instruments[name] = current.CurrentWidget(parent=self)
+            self.instruments[name].setColSpan(1)
+            self.instruments[name].setRowSpan(1)
+
+            name = 'Temperature' + str(i)
+            self.instruments[name] = temperature.TemperatureWidget(parent=self)
+            self.instruments[name].setColSpan(1)
+            self.instruments[name].setRowSpan(1)
+
+        self.layout.addWidget(self.instruments['compass'], 0, 0)
+        self.layout.addWidget(self.instruments['altimeter'], 3, 0)
+        self.layout.addWidget(self.instruments['horizon'], 6, 0)
+        self.layout.addWidget(self.instruments['Current1'], 0, 3)
+        self.layout.addWidget(self.instruments['Current2'], 2, 3)
+        self.layout.addWidget(self.instruments['Current3'], 4, 3)
+        self.layout.addWidget(self.instruments['Current4'], 6, 3)
+        self.layout.addWidget(self.instruments['Temperature1'], 8, 3)
+        self.layout.addWidget(self.instruments['Temperature2'], 10, 3)
+        self.layout.addWidget(self.instruments['Temperature3'], 12, 3)
+        self.layout.addWidget(self.instruments['Temperature4'], 14, 3)
 
         # Add centralWidget to mainPanel
         parent.setCentralWidget(self)

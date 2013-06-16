@@ -8,6 +8,7 @@ import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
 import parser
 from processing import estimator
+from widgets import floatlayout
 from widgets.instruments import compass, altimeter, horizon
 
 class MainPanel(QtGui.QMainWindow):
@@ -39,21 +40,26 @@ class MenuBar(QtGui.QMenuBar):
         showAltimeter.setChecked(True)
         showAltimeter.setObjectName("Altimeter")
         showAltimeter.setText("&Altimeter")
-        showAltimeter.toggled.connect(parent.centralWidget.altimeter.setVisible)
+        showAltimeter.toggled.connect(parent.centralWidget.instruments['altimeter'].setVisible)
 
         showCompass = QtGui.QAction(parent)
         showCompass.setCheckable(True)
         showCompass.setChecked(True)
         showCompass.setObjectName("Compass")
         showCompass.setText("&Compass")
-        showCompass.toggled.connect(parent.centralWidget.compass.setVisible)
+        showCompass.toggled.connect(parent.centralWidget.instruments['compass'].setVisible)
 
         showHorizon = QtGui.QAction(parent)
         showHorizon.setCheckable(True)
         showHorizon.setChecked(True)
         showHorizon.setObjectName("Horizon")
         showHorizon.setText("&Horizon")
-        showHorizon.toggled.connect(parent.centralWidget.horizon.setVisible)
+        showHorizon.toggled.connect(parent.centralWidget.instruments['horizon'].setVisible)
+
+        editMode = QtGui.QAction(parent)
+        editMode.setCheckable(True)
+        editMode.setText("&Edit Layout")
+        editMode.toggled.connect(parent.centralWidget.enterEditMode)
 
         # Add menuBar to mainPanel
         menubar = parent.menuBar()
@@ -63,7 +69,10 @@ class MenuBar(QtGui.QMenuBar):
         viewMenu = menubar.addMenu('&View')
         viewMenu.addAction(showAltimeter)
         viewMenu.addAction(showCompass)
-        viewMenu.addAction(showHorizon)        
+        viewMenu.addAction(showHorizon)
+        viewMenu.addSeparator()
+        viewMenu.addAction(editMode)
+
 
 class CentralWidget(QtGui.QWidget):
 
@@ -72,22 +81,31 @@ class CentralWidget(QtGui.QWidget):
 
         self.estimator = estimator.Estimator()
 
-        self.layout = QtGui.QGridLayout(self)
+        self.layout = floatlayout.FloatLayout([9, 5], parent=self)
 
-        self.compass = compass.CompassWidget(self.estimator)
-        self.altimeter = altimeter.AltimeterWidget()
-        self.horizon = horizon.HorizonWidget(self.estimator)
+        self.instruments = {}
+        self.instruments['compass'] = compass.CompassWidget(self.estimator, self)
+        self.instruments['altimeter'] = altimeter.AltimeterWidget(None, self)
+        self.instruments['horizon'] = horizon.HorizonWidget(self.estimator, self)
 
-        # Add widgets to centralWidget        
-        self.layout.addWidget(self.compass, 0, 0, 3, 3)
-        self.layout.addWidget(self.altimeter, 0, 3, 3, 3)
-        self.layout.addWidget(self.horizon, 0, 6, 3, 3)
+        self.layout.addWidget(self.instruments['compass'])
+        self.layout.addWidget(self.instruments['altimeter'])
+        self.layout.addWidget(self.instruments['horizon'])
 
         # Add centralWidget to mainPanel
         parent.setCentralWidget(self)
 
-    def minimumHeightForWidth(self,w):
-        return w*5/9
+#    def minimumHeightForWidth(self,w):
+#        return w*5/9
+
+
+    def enterEditMode(self, editMode):
+        for instrument in self.instruments.values():
+            if editMode:
+                instrument.enterLayoutEditMode()
+            else:
+                instrument.exitLayoutEditMode()
+
 
 #    def resizeEvent(self, event):
 #       size = min(event.width / self.columnCount, event.height / self.rowCount)

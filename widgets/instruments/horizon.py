@@ -6,15 +6,15 @@ from PyQt4 import QtGui,  QtCore
 
 import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
-from widgets.instruments import intrument
+from widgets.instruments import instrument
 
 
-class HorizonWidget(instrument):
+class HorizonWidget(instrument.Instrument):
     roll = 0
     pitch = 0
     
-    def __init__(self, estimator=None):
-        super(HorizonWidget, self).__init__()
+    def __init__(self, estimator=None, parent=None):
+        super(HorizonWidget, self).__init__(parent)
 
         self.estimator = estimator
         if estimator:
@@ -33,6 +33,7 @@ class HorizonWidget(instrument):
         self.textAltFont=QtGui.QFont("Times", 12, 75)
         
         # Setup the user interface
+        self.setGeometry(300, 300, 340, 340)
         self.setWindowTitle('Horizon')
     
     def setPitch(self, pitch):

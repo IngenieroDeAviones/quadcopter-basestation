@@ -6,14 +6,14 @@ from PyQt4 import QtGui,  QtCore
 
 import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
-from widgets.instruments import intrument
+from widgets.instruments import instrument
 
 
-class CompassWidget(instrument):
+class CompassWidget(instrument.Instrument):
     heading = 0
     
-    def __init__(self,  estimator=None):
-        super(CompassWidget, self).__init__()
+    def __init__(self,  estimator=None, parent=None):
+        super().__init__(parent)
         self.estimator = estimator
         if estimator:
             self.estimator.rotation.updated.connect(lambda stream: self.setHeading(math.degrees(stream['heading'])))

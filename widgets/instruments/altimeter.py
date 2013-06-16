@@ -6,12 +6,12 @@ from PyQt4 import QtGui,  QtCore
 
 import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
-from widgets.instruments import intrument
+from widgets.instruments import instrument
 
 
-class AltimeterWidget(instrument):
-    def __init__(self,  barometer=None):
-        super(AltimeterWidget, self).__init__()
+class AltimeterWidget(instrument.Instrument):
+    def __init__(self,  barometer=None, parent=None):
+        super().__init__(parent)
         self.altitude = 0
         self.barometer = barometer
         if barometer:

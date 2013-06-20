@@ -15,7 +15,7 @@ class Estimator:
         super().__init__()
         self.rotation_raw = stream.Stream(('pitch', 'roll', 'heading'), name='estimator.rotation_raw')
 
-        self.thread = parser.ParserThread(open('/dev/arduino'))
+        self.thread = parser.ParserThread('/dev/arduino')
         self.sensorParser = parser.SensorDataParser(self.thread)
         self.thread.start()
 

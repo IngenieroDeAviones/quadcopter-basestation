@@ -19,7 +19,11 @@ class ParserThread(QtCore.QThread):
     def __init__(self, stream):
         super().__init__()
         if type(stream) == str:
-            stream = open(stream)
+            try:
+                stream = open(stream)
+            except:
+                print('Warning: not connected to arduino')
+                stream = None
         self.stream = stream
 
 
@@ -43,15 +47,17 @@ class ParserThread(QtCore.QThread):
 
     
     def run(self):
-        for line in self.stream:
-            try:
-                self.parseLine(line)
-            except Exception as e:
-                print(e)
+        if self.stream:
+            for line in self.stream:
+                try:
+                    self.parseLine(line)
+                except Exception as e:
+                    print(e)
 
 
     def __del__(self):
-        self.stream.close()
+        if self.stream:
+            self.stream.close()
 
 
 class SensorDataParser(QtCore.QObject):

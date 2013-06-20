@@ -8,7 +8,7 @@ import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
 import parser
 from processing import estimator
-from widgets import floatlayout
+from widgets import gridlayout
 from widgets.instruments import compass, altimeter, horizon, current, temperature
 
 class MainPanel(QtGui.QMainWindow):
@@ -16,7 +16,7 @@ class MainPanel(QtGui.QMainWindow):
     def __init__(self):
         super(MainPanel, self).__init__()
 
-        self.resize(1080, 380)
+        self.resize(900, 620)
         self.centralWidget = CentralWidget(self)
         self.menuBar = MenuBar(self)
         self.setWindowTitle('Main panel')
@@ -81,38 +81,41 @@ class CentralWidget(QtGui.QWidget):
 
         self.estimator = estimator.Estimator()
 
-        self.layout = floatlayout.FloatLayout([9, 4], parent=self)
+        self.layout = gridlayout.GridLayout([12, 8])
 
         self.instruments = {}
         self.instruments['compass'] = compass.CompassWidget(self.estimator, self)
+        self.instruments['compass'].setSpan(4)
         self.instruments['altimeter'] = altimeter.AltimeterWidget(None, self)
+        self.instruments['altimeter'].setSpan(4)
         self.instruments['horizon'] = horizon.HorizonWidget(self.estimator, self)
+        self.instruments['horizon'].setSpan(4)
 
         for i in range(1,5):
             name = 'Current' + str(i)
             self.instruments[name] = current.CurrentWidget(parent=self)
-            self.instruments[name].setColSpan(1)
-            self.instruments[name].setRowSpan(1)
+            self.instruments[name].setSpan(2)
 
             name = 'Temperature' + str(i)
             self.instruments[name] = temperature.TemperatureWidget(parent=self)
-            self.instruments[name].setColSpan(1)
-            self.instruments[name].setRowSpan(1)
+            self.instruments[name].setSpan(2)
 
         self.layout.addWidget(self.instruments['compass'], 0, 0)
-        self.layout.addWidget(self.instruments['altimeter'], 3, 0)
-        self.layout.addWidget(self.instruments['horizon'], 6, 0)
-        self.layout.addWidget(self.instruments['Current1'], 0, 3)
-        self.layout.addWidget(self.instruments['Current2'], 2, 3)
-        self.layout.addWidget(self.instruments['Current3'], 4, 3)
-        self.layout.addWidget(self.instruments['Current4'], 6, 3)
-        self.layout.addWidget(self.instruments['Temperature1'], 8, 3)
-        self.layout.addWidget(self.instruments['Temperature2'], 10, 3)
-        self.layout.addWidget(self.instruments['Temperature3'], 12, 3)
-        self.layout.addWidget(self.instruments['Temperature4'], 14, 3)
+        self.layout.addWidget(self.instruments['altimeter'], 4, 0)
+        self.layout.addWidget(self.instruments['horizon'], 8, 0)
+        self.layout.addWidget(self.instruments['Current1'], 0, 4)
+        self.layout.addWidget(self.instruments['Current2'], 2, 4)
+        self.layout.addWidget(self.instruments['Current3'], 2, 6)
+        self.layout.addWidget(self.instruments['Current4'], 0, 6)
+        self.layout.addWidget(self.instruments['Temperature1'], 4, 4)
+        self.layout.addWidget(self.instruments['Temperature2'], 6, 4)
+        self.layout.addWidget(self.instruments['Temperature3'], 6, 6)
+        self.layout.addWidget(self.instruments['Temperature4'], 4, 6)
 
         # Add centralWidget to mainPanel
         parent.setCentralWidget(self)
+
+        self.setLayout(self.layout)
 
 #    def minimumHeightForWidth(self,w):
 #        return w*5/9

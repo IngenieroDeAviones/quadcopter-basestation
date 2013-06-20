@@ -23,6 +23,11 @@ class Instrument(QtGui.QWidget):
         self.rowSpan = rowSpan
 
 
+    def setSpan(self, colSpan, rowSpan=None):
+        self.setColSpan(colSpan)
+        self.setRowSpan(rowSpan if not rowSpan is None else colSpan)
+
+
     def enterLayoutEditMode(self):
         self.layoutEdit = True
         self.layoutEditModeEntered.emit()

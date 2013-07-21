@@ -11,26 +11,20 @@ from processing import filters
 
 class Estimator:
 
-    def __init__(self):
+    def __init__(self, sensors):
         super().__init__()
         self.rotation_raw = stream.Stream(('pitch', 'roll', 'heading'), name='estimator.rotation_raw')
 
-        self.thread = parser.ParserThread('/dev/arduino')
-        self.sensorParser = parser.SensorDataParser(self.thread)
-        self.thread.start()
+        self.sensors = sensors
+        self.sensors.accelerometer.updated.connect(self.updateRotation)
+        self.sensors.magnetometer.updated.connect(self.updateRotation)
 
-        self.accelerometer = sensor.Accelerometer(self.sensorParser)
-        self.accelerometer.updated.connect(self.updateRotation)
-        self.magnetometer = sensor.Magnetometer(self.sensorParser)
-        self.magnetometer.updated.connect(self.updateRotation)
-        self.gyroscope = sensor.Gyroscope(self.sensorParser)
-
-        self.rotation = filters.Complementary(self.rotation_raw, self.gyroscope, tau=2, name='estimator.rotation')
+        self.rotation = filters.Complementary(self.rotation_raw, self.sensors.gyroscope, tau=2, name='estimator.rotation')
 
 
     def updateRotation(self, stream):
-        mx, my, mz = [self.magnetometer[c] for c in ('x','y','z')]
-        ax, ay, az = [self.accelerometer[c] for c in ('x','y','z')]
+        mx, my, mz = [self.sensors.magnetometer[c] for c in ('x','y','z')]
+        ax, ay, az = [self.sensors.accelerometer[c] for c in ('x','y','z')]
 
         roll = math.atan2(-ay,az)
         pitch = math.atan2(ax, math.sqrt(ay*ay + az*az))

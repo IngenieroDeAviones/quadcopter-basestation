@@ -101,7 +101,10 @@ class Sum(Filter):
 
 
     def newData(self, stream):
-        self.update({channel: sum([stream[channel] for stream in self.inputStreams]) for channel in self._channels})
+        try:
+            self.update({channel: sum([stream[channel] for stream in self.inputStreams]) for channel in self._channels})
+        except:
+            pass
 
 
 

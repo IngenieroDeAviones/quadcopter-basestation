@@ -8,6 +8,7 @@ import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
 import parser
 from processing import estimator
+from sensors import sensor
 from widgets import gridlayout
 from widgets.instruments import compass, altimeter, horizon, current, temperature
 
@@ -79,7 +80,7 @@ class CentralWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(CentralWidget, self).__init__(parent)
 
-        self.estimator = estimator.Estimator()
+        self.estimator = estimator.Estimator(sensor.SensorManager())
 
         self.layout = gridlayout.GridLayout([12, 8])
 

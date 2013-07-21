@@ -5,18 +5,18 @@ import configparser
 from PyQt4 import QtCore
 
 import stream
+import parser
 
 
 class Sensor(stream.Stream):
     calibration = {}
 
-    def __init__(self, sensorDataParser, channelNames, name=None):
+    def __init__(self, channelNames, name=None):
         name = str(name) if not name is None else self.__class__.__name__
         stream.Stream.__init__(self, channelNames, name = 'sensor.' + name)
         self.raw = stream.Stream(channelNames, self.name + '_raw')
         self.loadCalibration()
 
-        sensorDataParser.addStream(self.char, self.raw)
         self.raw.updated.connect(self.newData)
 
 
@@ -53,8 +53,8 @@ class Sensor(stream.Stream):
 
 class Sensor3D(Sensor):
     calibration = {'cx': 0, 'cy': 0, 'cz': 0, 'a': 1, 'b': 1, 'c': 1}
-    def __init__(self, sensorDataParser, name=None, channelNames=None):
-        super().__init__(sensorDataParser, channelNames = channelNames or ['x', 'y', 'z'], name = name)
+    def __init__(self, name=None, channelNames=None):
+        super().__init__(channelNames = channelNames or ['x', 'y', 'z'], name = name)
 
 
     def newData(self, stream):
@@ -68,16 +68,33 @@ class Sensor3D(Sensor):
 # Individual sensors:
 
 class Accelerometer(Sensor3D):
-    char = 'A'
+    pass
 
 
 class Magnetometer(Sensor3D):
-    char = 'M'
+    pass
 
 
 class Gyroscope(Sensor3D):
-    char = 'G'
+    pass
 
 
 class Barometer(Sensor):
-    char = 'B'
+    def __init__(self, channelNames="pressure", name=None):
+        super().__init__(channelNames, name)
+
+
+#######################################
+# Sensor manager class
+
+class SensorManager:
+    def __init__(self):
+        self.thread = parser.ParserThread('/dev/arduino', self)
+
+        self.accelerometer = Accelerometer()
+        self.magnetometer = Magnetometer()
+        self.gyroscope = Gyroscope()
+        self.barometer = Barometer()
+
+        self.thread.start()
+

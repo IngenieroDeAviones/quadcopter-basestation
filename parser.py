@@ -23,7 +23,7 @@ class ParserThread(QtCore.QThread):
         super().__init__()
         if type(device) == str:
             try:
-                device = serial.Serial(device, 9600)
+                device = serial.Serial(device, 115200)
             except:
                 print('Warning: not connected to arduino')
                 device = None

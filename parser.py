@@ -42,13 +42,13 @@ class ParserThread(QtCore.QThread):
         if cmd == 0x1:
             self.error.emit(data)
         elif cmd == 0x2:
-            self.sensors.gyroscope.update(struct.unpack('fff', data))
-        elif cmd == 0x3:
-            self.sensors.accelerometer.update(struct.unpack('fff', data))
-        elif cmd == 0x4:
-            self.sensors.magnetometer.update(struct.unpack('fff', data))
-        elif cmd == 0x5:
             self.sensors.barometer.update(struct.unpack('f', data))
+        elif cmd == 0x3:
+            self.sensors.gyroscope.update(struct.unpack('fff', data))
+        elif cmd == 0x4:
+            self.sensors.accelerometer.update(struct.unpack('fff', data))
+        elif cmd == 0x5:
+            self.sensors.magnetometer.update(struct.unpack('fff', data))
 
 
     

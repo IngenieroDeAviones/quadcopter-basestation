@@ -7,6 +7,7 @@ from PyQt4 import QtGui,  QtCore
 import os
 sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
 from widgets.instruments import instrument
+from processing import filters
 
 
 class HorizonWidget(instrument.Instrument):
@@ -18,7 +19,8 @@ class HorizonWidget(instrument.Instrument):
 
         self.estimator = estimator
         if estimator:
-            self.estimator.rotation.updated.connect(self.updateRotation)
+            self.rotation = filters.LowPass(self.estimator.rotation, 10)
+            self.rotation.updated.connect(self.updateRotation)
 
         # Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)

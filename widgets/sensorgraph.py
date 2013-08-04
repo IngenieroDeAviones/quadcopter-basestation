@@ -13,7 +13,7 @@ import stream
 
 class streamGraph(plotwidget.Graph):
     def __init__(self, axis, stream, channel):
-        self.data = [deque(maxlen=200), deque(maxlen=200)]
+        self.data = [deque(maxlen=1000), deque(maxlen=1000)]
         super().__init__(axis, self.data[0], self.data[1])
         self.channel = channel
         stream.updated.connect(self.update)
@@ -54,7 +54,10 @@ class SensorGraph(plotwidget.PlotWidget):
                 graph = streamGraph(self.figure.axes[0], s, channel)
                 graph.setVisible(False)
                 self.graphs[s.name + '.' + channel] = graph
-        parser.nextIteration.connect(self.replot)
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.replot)
+        self.timer.start(100)
+        #parser.nextIteration.connect(self.replot)
 
 
 class SensorGraphWidget(QtGui.QWidget):
@@ -67,7 +70,7 @@ class SensorGraphWidget(QtGui.QWidget):
         self.sensorTree.selectionModel().selectionChanged.connect(self.selectionChanged)
         self.recordButton = QtGui.QPushButton('record')
         self.recordButton.clicked.connect(self.record)
-        self.graph = SensorGraph(estimator.thread)
+        self.graph = SensorGraph(estimator.sensors)
 
         leftLayout = QtGui.QVBoxLayout()
         leftLayout.addWidget(self.sensorTree)
@@ -106,8 +109,9 @@ class SensorGraphWidget(QtGui.QWidget):
 if __name__ == '__main__':
     import parser
     from processing import estimator
+    from sensors import sensor
 
-    est= estimator.Estimator()
+    est= estimator.Estimator(sensor.SensorManager())
 
     app = QtGui.QApplication(sys.argv)
     widget = SensorGraphWidget(est)

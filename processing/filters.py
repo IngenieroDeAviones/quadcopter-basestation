@@ -32,7 +32,8 @@ class LowPass(Filter):
 
     def newData(self, stream):
         try:
-            a = 1 / (1 + self.tau)
+            dt = stream.dt.total_seconds()
+            a = dt / (1 + self.tau)
             d = {}
             for channel, value in stream.items():
                 d[channel] = self.y_last[channel] + a * (value - self.y_last[channel])
@@ -53,11 +54,12 @@ class HighPass(Filter):
 
     def newData(self, stream):
         if self.x_last:
-            a = self.tau / (1 + self.tau)
+            dt = stream.dt.total_seconds()
+            a = dt * self.tau / (1 + self.tau * dt)
             d = {}
             for channel, value in stream.items():
                 d[channel] = a * (self.y_last[channel] + value - self.x_last[channel])
-                #y[i] := α * (y[i-1] + x[i] - x[i-1])
+                #y[i] := a * (y[i-1] + x[i] - x[i-1])
             self.update(d)
             self.y_last = d
         else:
@@ -75,9 +77,12 @@ class Integrator(Filter):
     def newData(self, stream):
         try:
             dt = stream.dt.total_seconds()
-            self.update({channel: self.y_last[channel] + value * dt for channel, value in stream.items()})
+            d = {channel: self.y_last[channel] + value * dt for channel, value in stream.items()}
+            self.update(d)
+            self.y_last = d
         except:
             self.update(stream._channels)
+            self.y_last = stream._channels
 
 
 class Multiply(Filter):
@@ -115,9 +120,9 @@ class Complementary(Sum):
         self.lowpass.updated.connect(self.newData)
 
         self.inputDifferential = inputDifferential
-        self.highpass = HighPass(self.inputDifferential, tau)
-        self.invert = Multiply(self.highpass, -0.3)
-        self.integrator = Integrator(self.invert, channelTranslation={'x': 'roll', 'y': 'pitch', 'z':'heading'})
-        self.integrator.updated.connect(self.newData)
+        self.integrator = Integrator(self.inputDifferential, channelTranslation={'x': 'roll', 'y': 'pitch', 'z':'heading'})
+        self.highpass = HighPass(self.integrator, tau)
+        self.invert = Multiply(self.highpass, -1)
+        self.invert.updated.connect(self.newData)
 
-        super().__init__([self.lowpass, self.integrator], name=name, parent=parent)
+        super().__init__([self.lowpass, self.invert], name=name, parent=parent)

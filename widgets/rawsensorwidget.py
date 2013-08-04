@@ -41,7 +41,8 @@ if __name__ == '__main__':
     import sys
     sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
     import parser
-    import sensor
+    from sensors import sensor
+    from processing import estimator
 
     sensorList = [sensor.Gyroscope(),
                   sensor.Accelerometer(),
@@ -49,9 +50,7 @@ if __name__ == '__main__':
                   sensor.Barometer()]
 
     app = QtGui.QApplication(sys.argv)
-    thread = parser.ParserThread('/dev/arduino')
-    thread.start()
-    sensorParser = parser.SensorDataParser(thread, sensorList)
-    widget = RawSensorWidget(sensorParser.sensors.values())
+    estimator = estimator.Estimator(sensor.SensorManager())
+    widget = RawSensorWidget(estimator.sensors.values())
     widget.show()
     sys.exit(app.exec_())

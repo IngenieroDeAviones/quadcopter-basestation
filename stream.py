@@ -5,6 +5,8 @@ import datetime
 import weakref
 from PyQt4 import QtCore
 
+import traceback
+
 class Stream(QtCore.QObject):
     """Class representing a data stream.
     

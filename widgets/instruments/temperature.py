@@ -5,16 +5,21 @@ import math
 from PyQt4 import QtGui, QtCore
 
 import os
-sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))] + sys.path
+sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))] + sys.path
 from widgets.instruments import instrument
 
 
 class TemperatureWidget(instrument.Instrument):
-    def __init__(self, sensor=None, maxTemp=100, parent=None):
+    def __init__(self, sensor=None, minTemp=40, maxTemp=120, highThreshold=90, criticalThreshold=100, stepSize=10, valueFactor=2, parent=None):
         super().__init__(parent)
-        self.temperature = 110
+        self.temperature = 0
         self.sensor = sensor
+        self.minTemp = minTemp
         self.maxTemp = maxTemp
+        self.highThreshold = highThreshold
+        self.criticalThreshold = criticalThreshold
+        self.stepSize = stepSize
+        self.valueFactor = valueFactor
 
         #Define Pens and fonts
         self.thickPen=QtGui.QPen(QtCore.Qt.white,  6,  cap=QtCore.Qt.FlatCap)
@@ -84,9 +89,9 @@ class TemperatureWidget(instrument.Instrument):
         qp.save()
         qp.setPen(QtGui.QColor(255, 255, 255))
         qp.setBrush(QtGui.QColor(255, 255, 255))
-        if self.temperature >= self.maxTemp:
+        if self.temperature >= self.criticalThreshold:
             color = QtCore.Qt.red
-        elif self.temperature >= self.maxTemp - 10:
+        elif self.temperature >= self.highThreshold:
             color = QtCore.Qt.yellow
         else:
             color = QtCore.Qt.white
@@ -119,7 +124,8 @@ class TemperatureWidget(instrument.Instrument):
 
         qp.save()
         qp.translate(0,100)
-        qp.rotate(-100+100/80*min(max(self.temperature, 30), 130))
+        #qp.rotate(-100+100/(self.maxTemp - self.minTemp)*min(max(self.temperature, 30), 130))
+        qp.rotate(min(max(-50 + 100 / (self.maxTemp - self.minTemp)*(self.temperature - self.minTemp), -60), 60))
         qp.drawPolygon(self.arrow1Poly)
         qp.restore()
         
@@ -138,23 +144,23 @@ class TemperatureWidget(instrument.Instrument):
 
         rectangle = QtCore.QRect(-172, -172, 344, 344)
         startAngleRed = 40 * 16
-        spanAngleRed = (120 - self.maxTemp) * 1.25 * 16
+        spanAngleRed = (self.maxTemp - self.criticalThreshold) * 100/(self.maxTemp - self.minTemp) * 16
 
         qp.drawArc(rectangle, startAngleRed, spanAngleRed)
 
         qp.setPen(self.yellowPen)
         startAngleYellow = startAngleRed + spanAngleRed
-        spanAngleYellow = 12.5 * 16
+        spanAngleYellow = 100/(self.maxTemp - self.minTemp) * (self.criticalThreshold - self.highThreshold) * 16
 
         qp.drawArc(rectangle, startAngleYellow, spanAngleYellow)
 
         qp.rotate(-50)
 
-        for temperature in range(40, 121, 10):
-            if temperature % 20 == 0:
+        for temperature in range(self.minTemp, self.maxTemp+1, self.stepSize):
+            if temperature % (self.stepSize * self.valueFactor) == 0:
                 qp.setPen(self.thickPen)
                 qp.drawLine(0, -190, 0, -170)
-                angle = -100 + 100/80*temperature
+                angle = -50 + 100/(self.maxTemp - self.minTemp)*(temperature - self.minTemp)
                 qp.save()
                 qp.translate(0, -150)
                 qp.rotate(-angle)
@@ -167,7 +173,7 @@ class TemperatureWidget(instrument.Instrument):
                 qp.setPen(self.mediumPen)
                 qp.drawLine(0, -180, 0, -170)
 
-            qp.rotate(12.5)
+            qp.rotate(100/(self.maxTemp - self.minTemp) * self.stepSize) #2.5)
 
         qp.restore()
 

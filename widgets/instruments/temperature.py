@@ -10,9 +10,9 @@ from widgets.instruments import instrument
 
 
 class TemperatureWidget(instrument.Instrument):
-    def __init__(self, sensor=None, minTemp=40, maxTemp=120, highThreshold=90, criticalThreshold=100, stepSize=10, valueFactor=2, parent=None):
+    def __init__(self, sensor=None, minTemp=120, maxTemp=40, highThreshold=70, criticalThreshold=60, stepSize=10, valueFactor=2, parent=None):
         super().__init__(parent)
-        self.temperature = 0
+        self.temperature = 85
         self.sensor = sensor
         self.minTemp = minTemp
         self.maxTemp = maxTemp
@@ -89,12 +89,20 @@ class TemperatureWidget(instrument.Instrument):
         qp.save()
         qp.setPen(QtGui.QColor(255, 255, 255))
         qp.setBrush(QtGui.QColor(255, 255, 255))
-        if self.temperature >= self.criticalThreshold:
-            color = QtCore.Qt.red
-        elif self.temperature >= self.highThreshold:
-            color = QtCore.Qt.yellow
+        if self.minTemp < self.maxTemp:
+            if self.temperature >= self.criticalThreshold:
+                color = QtCore.Qt.red
+            elif self.temperature >= self.highThreshold:
+                color = QtCore.Qt.yellow
+            else:
+                color = QtCore.Qt.white
         else:
-            color = QtCore.Qt.white
+            if self.temperature <= self.criticalThreshold:
+                color = QtCore.Qt.red
+            elif self.temperature <= self.highThreshold:
+                color = QtCore.Qt.yellow
+            else:
+                color = QtCore.Qt.white
 
         qp.setPen(QtGui.QPen(color, 5, cap=QtCore.Qt.RoundCap))
 
@@ -143,38 +151,72 @@ class TemperatureWidget(instrument.Instrument):
         qp.setPen(self.redPen)
 
         rectangle = QtCore.QRect(-172, -172, 344, 344)
-        startAngleRed = 40 * 16
-        spanAngleRed = (self.maxTemp - self.criticalThreshold) * 100/(self.maxTemp - self.minTemp) * 16
+        
+        if self.highThreshold < self.criticalThreshold or self.maxTemp < self.minTemp:
+            startAngleRed = 40 * 16
+            spanAngleRed = (self.maxTemp - self.criticalThreshold) * 100/(self.maxTemp - self.minTemp) * 16
 
-        qp.drawArc(rectangle, startAngleRed, spanAngleRed)
+            qp.drawArc(rectangle, startAngleRed, spanAngleRed)
 
-        qp.setPen(self.yellowPen)
-        startAngleYellow = startAngleRed + spanAngleRed
-        spanAngleYellow = 100/(self.maxTemp - self.minTemp) * (self.criticalThreshold - self.highThreshold) * 16
+            qp.setPen(self.yellowPen)
+            startAngleYellow = startAngleRed + spanAngleRed
+            spanAngleYellow = 100/(self.maxTemp - self.minTemp) * (self.criticalThreshold - self.highThreshold) * 16
 
-        qp.drawArc(rectangle, startAngleYellow, spanAngleYellow)
+            qp.drawArc(rectangle, startAngleYellow, spanAngleYellow)
+
+        else:
+            startAngleRed = 140 * 16
+            spanAngleRed = (self.criticalThreshold - self.minTemp) * 100/(self.maxTemp - self.minTemp) * -16
+
+            qp.drawArc(rectangle, startAngleRed, spanAngleRed)
+
+            qp.setPen(self.yellowPen)
+            startAngleYellow = startAngleRed + spanAngleRed
+            spanAngleYellow = 100/(self.maxTemp - self.minTemp) * (self.highThreshold - self.criticalThreshold) * -16
+
+            qp.drawArc(rectangle, startAngleYellow, spanAngleYellow)
 
         qp.rotate(-50)
 
-        for temperature in range(self.minTemp, self.maxTemp+1, self.stepSize):
-            if temperature % (self.stepSize * self.valueFactor) == 0:
-                qp.setPen(self.thickPen)
-                qp.drawLine(0, -190, 0, -170)
-                angle = -50 + 100/(self.maxTemp - self.minTemp)*(temperature - self.minTemp)
-                qp.save()
-                qp.translate(0, -150)
-                qp.rotate(-angle)
+        if self.minTemp < self.maxTemp:
+            for temperature in range(self.minTemp, self.maxTemp+1, self.stepSize):
+                if temperature % (self.stepSize * self.valueFactor) == 0:
+                    qp.setPen(self.thickPen)
+                    qp.drawLine(0, -190, 0, -170)
+                    angle = -50 + 100/(self.maxTemp - self.minTemp)*(temperature - self.minTemp)
+                    qp.save()
+                    qp.translate(0, -150)
+                    qp.rotate(-angle)
     
-                number = str(temperature)
-                rect=qp.fontMetrics().tightBoundingRect(number)
-                qp.drawText(-rect.width()/2, rect.height()/2, number)
-                qp.restore()
-            else:
-                qp.setPen(self.mediumPen)
-                qp.drawLine(0, -180, 0, -170)
+                    number = str(temperature)
+                    rect=qp.fontMetrics().tightBoundingRect(number)
+                    qp.drawText(-rect.width()/2, rect.height()/2, number)
+                    qp.restore()
+                else:
+                    qp.setPen(self.mediumPen)
+                    qp.drawLine(0, -180, 0, -170)
 
-            qp.rotate(100/(self.maxTemp - self.minTemp) * self.stepSize) #2.5)
+                qp.rotate(100/(self.maxTemp - self.minTemp) * self.stepSize) #2.5)
 
+        else:
+            for temperature in reversed(range(self.maxTemp, self.minTemp+1, self.stepSize)):
+                if temperature % (self.stepSize * self.valueFactor) == 0:
+                    qp.setPen(self.thickPen)
+                    qp.drawLine(0, -190, 0, -170)
+                    angle = -50 + 100/(self.maxTemp - self.minTemp)*(temperature - self.minTemp)
+                    qp.save()
+                    qp.translate(0, -150)
+                    qp.rotate(-angle)
+
+                    number = str(temperature)
+                    rect=qp.fontMetrics().tightBoundingRect(number)
+                    qp.drawText(-rect.width()/2, rect.height()/2, number)
+                    qp.restore()
+                else:
+                    qp.setPen(self.mediumPen)
+                    qp.drawLine(0, -180, 0, -170)
+
+                qp.rotate(100/(self.minTemp - self.maxTemp) * self.stepSize)
         qp.restore()
 
 def main():

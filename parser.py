@@ -17,6 +17,7 @@ class InvalidSyntaxError(Exception):
 class ParserThread(QtCore.QThread):
     daemon = True
 
+    commandRecieved = QtCore.pyqtSignal(bytes)
     error = QtCore.pyqtSignal(bytes)
 
     def __init__(self, device, sensors):
@@ -39,6 +40,8 @@ class ParserThread(QtCore.QThread):
 
         data = self.stream.read(length)
 
+        self.commandRecieved.emit(struct.pack('B', c) + data);
+
         if cmd == 0x1:
             self.error.emit(data)
         elif cmd == 0x2:
@@ -50,6 +53,9 @@ class ParserThread(QtCore.QThread):
         elif cmd == 0x5:
             self.sensors.magnetometer.update(struct.unpack('fff', data))
 
+
+    def send(self, command):
+        self.stream.write(command)
 
     
     def run(self):

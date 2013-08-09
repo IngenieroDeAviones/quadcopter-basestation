@@ -9,7 +9,7 @@ sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pard
 import parser
 from processing import estimator
 from sensors import sensor
-from widgets import gridlayout
+from widgets import gridlayout, debug
 from widgets.instruments import compass, altimeter, horizon, current, temperature
 
 class MainPanel(QtGui.QMainWindow):
@@ -43,7 +43,7 @@ class MenuBar(QtGui.QMenuBar):
         showAltimeter.setText("&Altimeter")
         showAltimeter.toggled.connect(parent.centralWidget.instruments['altimeter'].setVisible)
 
-        showCompass = QtGui.QAction(parent)
+        showCompass = QtGui.QAction(self)
         showCompass.setCheckable(True)
         showCompass.setChecked(True)
         showCompass.setObjectName("Compass")
@@ -62,6 +62,10 @@ class MenuBar(QtGui.QMenuBar):
         editMode.setText("&Edit Layout")
         editMode.toggled.connect(parent.centralWidget.enterEditMode)
 
+        showDebugAction = QtGui.QAction(parent)
+        showDebugAction.setText('Show &Debug Window')
+        showDebugAction.triggered.connect(self.openDebugWindow)
+
         # Add menuBar to mainPanel
         menubar = parent.menuBar()
         fileMenu = menubar.addMenu('&File')
@@ -73,6 +77,15 @@ class MenuBar(QtGui.QMenuBar):
         viewMenu.addAction(showHorizon)
         viewMenu.addSeparator()
         viewMenu.addAction(editMode)
+
+        debugMenu = menubar.addMenu('&Debug')
+        debugMenu.addAction(showDebugAction)
+
+
+    def openDebugWindow(self, centralWidget):
+        if not hasattr(self, 'debugWindow'):
+            self.debugWindow = debug.DebugWindow(self.parent().centralWidget.estimator.sensors.thread)
+        self.debugWindow.show()
 
 
 class CentralWidget(QtGui.QWidget):

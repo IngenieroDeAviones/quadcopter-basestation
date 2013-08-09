@@ -2,6 +2,8 @@
 
 import sys
 import math
+import operator
+import numpy as np
 from PyQt4 import QtGui, QtCore
 
 import os
@@ -9,14 +11,15 @@ sys.path = [os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pard
 from widgets.instruments import instrument
 
 
-class TemperatureWidget(instrument.Instrument):
-    def __init__(self, sensor=None, minTemp=120, maxTemp=40, highThreshold=70, criticalThreshold=60, stepSize=10, valueFactor=2, parent=None):
+class GaugeWidget(instrument.Instrument):
+    def __init__(self, sensor=None, type="voltage", valueLeft=2.5, valueRight=4.5, warningThreshold=3.2, criticalThreshold=3.0, stepSize=0.1, valueFactor=5, parent=None):
         super().__init__(parent)
-        self.temperature = 85
+        self.value = 3.5
         self.sensor = sensor
-        self.minTemp = minTemp
-        self.maxTemp = maxTemp
-        self.highThreshold = highThreshold
+        self.type = type
+        self.valueLeft = valueLeft
+        self.valueRight = valueRight
+        self.warningThreshold = warningThreshold
         self.criticalThreshold = criticalThreshold
         self.stepSize = stepSize
         self.valueFactor = valueFactor
@@ -43,15 +46,22 @@ class TemperatureWidget(instrument.Instrument):
 
         #Setup the user interface
         self.setGeometry(300, 300, 340, 340)
-        self.setWindowTitle('Temperature')
+        if self.type == "temperature":
+            self.setWindowTitle('Temperature')
+        elif self.type == "current":
+            self.setWindowTitle('Current')
+        elif self.type == "voltage":
+            self.setWindowTitle('Voltage')
+        else:
+            self.setWindowTitle('Error')
         self.show()
 
-    def setTemperature(self, temperature):
-        self.temperature = temperature
+    def setValue(self, value):
+        self.value = value
         self.update()
 
     def paintEvent(self, e):
-        """ Draw the temperature sensor """
+        """ Draw the gauge """
         qp = QtGui.QPainter()
         qp.begin(self)
         qp.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -79,52 +89,86 @@ class TemperatureWidget(instrument.Instrument):
         qp.setBrush(QtGui.QColor(255, 255, 255))
 
         qp.translate(0,-130)
-        string = "°C"
+        if self.type == "temperature":
+            string = "°C"
+        elif self.type == "current":
+            string = "A"
+        elif self.type == "voltage":
+            string = "V"
+
         rect = qp.fontMetrics().tightBoundingRect(string)
         qp.drawText(-rect.width()/2, rect.height()/2, string)
         qp.restore()
 
-        """ Draw the temperature symbol """
-
-        qp.save()
-        qp.setPen(QtGui.QColor(255, 255, 255))
-        qp.setBrush(QtGui.QColor(255, 255, 255))
-        if self.minTemp < self.maxTemp:
-            if self.temperature >= self.criticalThreshold:
-                color = QtCore.Qt.red
-            elif self.temperature >= self.highThreshold:
-                color = QtCore.Qt.yellow
+        if self.type == "temperature":
+            """ Draw the temperature symbol """
+    
+            qp.save()
+            qp.setPen(QtGui.QColor(255, 255, 255))
+            qp.setBrush(QtGui.QColor(255, 255, 255))
+            if self.criticalThreshold > self.warningThreshold:
+                if self.value >= self.criticalThreshold:
+                    color = QtCore.Qt.red
+                elif self.value >= self.warningThreshold:
+                    color = QtCore.Qt.yellow
+                else:
+                    color = QtCore.Qt.white
             else:
-                color = QtCore.Qt.white
-        else:
-            if self.temperature <= self.criticalThreshold:
-                color = QtCore.Qt.red
-            elif self.temperature <= self.highThreshold:
-                color = QtCore.Qt.yellow
+                if self.value <= self.criticalThreshold:
+                    color = QtCore.Qt.red
+                elif self.value <= self.warningThreshold:
+                    color = QtCore.Qt.yellow
+                else:
+                    color = QtCore.Qt.white
+    
+            qp.setPen(QtGui.QPen(color, 5, cap=QtCore.Qt.RoundCap))
+            qp.translate(0,50)
+            qp.drawEllipse(-3, -3, 6, 6)
+            qp.drawLine(0, 0, 0, -40)
+            qp.setPen(QtGui.QPen(color, 4, cap=QtCore.Qt.RoundCap))
+    
+            qp.translate(0,-15)
+            qp.drawLine(0, 0, 12, 0)
+    
+            qp.translate(0,-8)
+            qp.drawLine(0, 0, 12, 0)
+    
+            qp.translate(0,-8)
+            qp.drawLine(0, 0, 12, 0)
+    
+            qp.restore()
+
+        elif self.type == "voltage":
+            """ Draw the DC Symbol """
+
+            qp.save()
+            #qp.setPen(self.thickPen)
+            if self.criticalThreshold > self.warningThreshold:
+                if self.value >= self.criticalThreshold:
+                    color = QtCore.Qt.red
+                elif self.value >= self.warningThreshold:
+                    color = QtCore.Qt.yellow
+                else:
+                    color = QtCore.Qt.white
             else:
-                color = QtCore.Qt.white
+                if self.value <= self.criticalThreshold:
+                    color = QtCore.Qt.red
+                elif self.value <= self.warningThreshold:
+                    color = QtCore.Qt.yellow
+                else:
+                    color = QtCore.Qt.white
 
-        qp.setPen(QtGui.QPen(color, 5, cap=QtCore.Qt.RoundCap))
+            qp.setPen(QtGui.QPen(color, 5))
 
-        qp.translate(0,50)
+            qp.translate(0, 10)
+            qp.drawLine(-20, 0, 20, 0)
 
-        qp.drawEllipse(-3, -3, 6, 6)
+            qp.translate(0, 15)
+            qp.drawLine(-20, 0, -12, 0)
+            qp.drawLine(-4, 0, 4, 0)
+            qp.drawLine(12, 0, 20, 0)
 
-        qp.drawLine(0, 0, 0, -40)
-
-        qp.setPen(QtGui.QPen(color, 4, cap=QtCore.Qt.RoundCap))
-
-        qp.translate(0,-15)
-        qp.drawLine(0, 0, 12, 0)
-
-        qp.translate(0,-8)
-        qp.drawLine(0, 0, 12, 0)
-
-        qp.translate(0,-8)
-        qp.drawLine(0, 0, 12, 0)
-
-
-        qp.restore()
+            qp.restore()
 
         """ Draw the arrow """
         qp.setPen(QtGui.QColor(220, 51, 0))
@@ -132,8 +176,7 @@ class TemperatureWidget(instrument.Instrument):
 
         qp.save()
         qp.translate(0,100)
-        #qp.rotate(-100+100/(self.maxTemp - self.minTemp)*min(max(self.temperature, 30), 130))
-        qp.rotate(min(max(-50 + 100 / (self.maxTemp - self.minTemp)*(self.temperature - self.minTemp), -60), 60))
+        qp.rotate(min(max(-50 + 100 / (self.valueRight - self.valueLeft)*(self.value - self.valueLeft), -60), 60))
         qp.drawPolygon(self.arrow1Poly)
         qp.restore()
         
@@ -152,78 +195,67 @@ class TemperatureWidget(instrument.Instrument):
 
         rectangle = QtCore.QRect(-172, -172, 344, 344)
         
-        if self.highThreshold < self.criticalThreshold or self.maxTemp < self.minTemp:
+        if operator.xor(self.warningThreshold < self.criticalThreshold, self.valueRight < self.valueLeft):
+            # Arc angle is give in 1/16th of a degree. Therefore 40 * 16 in startAngleRed is 40 degrees
             startAngleRed = 40 * 16
-            spanAngleRed = (self.maxTemp - self.criticalThreshold) * 100/(self.maxTemp - self.minTemp) * 16
+            spanAngleRed = (self.valueRight - self.criticalThreshold) * 100/(self.valueRight - self.valueLeft) * 16
 
             qp.drawArc(rectangle, startAngleRed, spanAngleRed)
 
             qp.setPen(self.yellowPen)
             startAngleYellow = startAngleRed + spanAngleRed
-            spanAngleYellow = 100/(self.maxTemp - self.minTemp) * (self.criticalThreshold - self.highThreshold) * 16
+            spanAngleYellow = 100/(self.valueRight - self.valueLeft) * (self.criticalThreshold - self.warningThreshold) * 16
 
             qp.drawArc(rectangle, startAngleYellow, spanAngleYellow)
 
         else:
             startAngleRed = 140 * 16
-            spanAngleRed = (self.criticalThreshold - self.minTemp) * 100/(self.maxTemp - self.minTemp) * -16
+            spanAngleRed = (self.criticalThreshold - self.valueLeft) * 100/(self.valueRight - self.valueLeft) * -16
 
             qp.drawArc(rectangle, startAngleRed, spanAngleRed)
 
             qp.setPen(self.yellowPen)
             startAngleYellow = startAngleRed + spanAngleRed
-            spanAngleYellow = 100/(self.maxTemp - self.minTemp) * (self.highThreshold - self.criticalThreshold) * -16
+            spanAngleYellow = 100/(self.valueRight - self.valueLeft) * (self.warningThreshold - self.criticalThreshold) * -16
 
             qp.drawArc(rectangle, startAngleYellow, spanAngleYellow)
 
         qp.rotate(-50)
 
-        if self.minTemp < self.maxTemp:
-            for temperature in range(self.minTemp, self.maxTemp+1, self.stepSize):
-                if temperature % (self.stepSize * self.valueFactor) == 0:
-                    qp.setPen(self.thickPen)
-                    qp.drawLine(0, -190, 0, -170)
-                    angle = -50 + 100/(self.maxTemp - self.minTemp)*(temperature - self.minTemp)
-                    qp.save()
-                    qp.translate(0, -150)
-                    qp.rotate(-angle)
-    
-                    number = str(temperature)
-                    rect=qp.fontMetrics().tightBoundingRect(number)
-                    qp.drawText(-rect.width()/2, rect.height()/2, number)
-                    qp.restore()
-                else:
-                    qp.setPen(self.mediumPen)
-                    qp.drawLine(0, -180, 0, -170)
-
-                qp.rotate(100/(self.maxTemp - self.minTemp) * self.stepSize) #2.5)
-
+        if self.valueLeft < self.valueRight:
+            calc = self.valueRight - self.valueLeft
         else:
-            for temperature in reversed(range(self.maxTemp, self.minTemp+1, self.stepSize)):
-                if temperature % (self.stepSize * self.valueFactor) == 0:
-                    qp.setPen(self.thickPen)
-                    qp.drawLine(0, -190, 0, -170)
-                    angle = -50 + 100/(self.maxTemp - self.minTemp)*(temperature - self.minTemp)
-                    qp.save()
-                    qp.translate(0, -150)
-                    qp.rotate(-angle)
+            calc = self.valueLeft - self.valueRight
 
-                    number = str(temperature)
-                    rect=qp.fontMetrics().tightBoundingRect(number)
-                    qp.drawText(-rect.width()/2, rect.height()/2, number)
-                    qp.restore()
-                else:
-                    qp.setPen(self.mediumPen)
-                    qp.drawLine(0, -180, 0, -170)
+        step = (abs(self.valueLeft - self.valueRight) / self.stepSize) + 1
+        isint = type(self.valueLeft) == int and type(self.valueRight) == int and type(self.stepSize) == int
 
-                qp.rotate(100/(self.minTemp - self.maxTemp) * self.stepSize)
+        for value in np.linspace(self.valueLeft, self.valueRight, step):
+            if value % (self.stepSize * self.valueFactor) == 0:
+                qp.setPen(self.thickPen)
+                qp.drawLine(0, -190, 0, -170)
+                angle = -50 + 100/(self.valueRight - self.valueLeft)*(value - self.valueLeft)
+                qp.save()
+                qp.translate(0, -150)
+                qp.rotate(-angle)
+
+                number = str(value if not isint else int(value))
+                rect=qp.fontMetrics().tightBoundingRect(number)
+                qp.drawText(-rect.width()/2, rect.height()/2, number)
+                qp.restore()
+            else:
+                qp.setPen(self.mediumPen)
+                qp.drawLine(0, -180, 0, -170)
+
+            qp.rotate(100 / calc * self.stepSize)
+
         qp.restore()
 
 def main():
 
     app=QtGui.QApplication(sys.argv)
-    thermometer = TemperatureWidget()
-    thermometer.show()
+    gauge = GaugeWidget()
+    gauge.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

@@ -111,7 +111,7 @@ class CentralWidget(QtGui.QWidget):
             self.instruments[name].setSpan(2)
 
             name = 'Temperature' + str(i)
-            self.instruments[name] = temperature.TemperatureWidget(parent=self)
+            self.instruments[name] = temperature.GaugeWidget(parent=self)
             self.instruments[name].setSpan(2)
 
         self.layout.addWidget(self.instruments['compass'], 0, 0)

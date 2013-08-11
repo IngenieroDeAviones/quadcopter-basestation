@@ -30,6 +30,11 @@ class DebugWindow(QtGui.QDialog):
 
         self.setLayout(layout)
 
+        self.commandEdit.setFocus()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Enter or event.key() == QtCore.Qt.Key_Return:
+            self.sendCommand()
 
     def commandRecieved(self, cmd):
         if not cmd[0] & 0b1111 in (0x2, 0x3, 0x4, 0x5):

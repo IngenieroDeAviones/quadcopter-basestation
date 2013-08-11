@@ -55,6 +55,7 @@ class ParserThread(QtCore.QThread):
 
 
     def send(self, command):
+        print(command)
         self.stream.write(command)
 
     

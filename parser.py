@@ -59,20 +59,11 @@ class ParserThread(QtCore.QThread):
 
     
     def run(self):
-        self._waitForWelcomeMessage()
         if self.stream:
+            self.stream.flush()
+            self.send(b'\x01')
             while True:
                 self.parseCommand()
-
-
-    def _waitForWelcomeMessage(self):
-        while True:
-            for c in welcomeMessage:
-                x = ord(self.stream.read(1))
-                if x != c:
-                    break
-            else:
-                return
 
 
     def __del__(self):
